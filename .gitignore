@@ -21,3 +21,15 @@ history.json
 # OS
 Thumbs.db
 Desktop.ini
+
+# School docs / media (avoid committing large personal files)
+*.doc
+*.docx
+*.ppt
+*.pptx
+*.xls
+*.xlsx
+*.pdf
+*.mp4
+*.mov
+*.webm
