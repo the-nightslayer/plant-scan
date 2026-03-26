@@ -5,9 +5,8 @@ import os
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 import uuid
-import streamlit.components.v1 as components
 from groq import Groq
 from PIL import Image
 import io
@@ -43,28 +42,27 @@ def render_site_logo() -> None:
 def confetti_once() -> None:
     if not st.session_state.get("_confetti_pending", False):
         return
-    components.html(
-        """
-        <div id="confetti-root"></div>
-        <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-        <script>
-          (function () {
-            function burst() {
-              if (!window.confetti) return;
-              var end = Date.now() + 900;
-              (function frame() {
-                window.confetti({ particleCount: 6, spread: 70, origin: { y: 0.8 } });
-                window.confetti({ particleCount: 5, spread: 90, origin: { y: 0.7 } });
-                if (Date.now() < end) requestAnimationFrame(frame);
-              })();
-            }
-            burst();
-          })();
-        </script>
-        """,
-        height=0,
-    )
+    # Reliable visual celebration in Streamlit Cloud environments.
+    st.balloons()
     st.session_state["_confetti_pending"] = False
+
+
+def render_falling_leaves() -> None:
+    st.markdown(
+        """
+        <div class="leaf-layer" aria-hidden="true">
+          <span class="leaf-item l1">🍃</span>
+          <span class="leaf-item l2">🍃</span>
+          <span class="leaf-item l3">🍂</span>
+          <span class="leaf-item l4">🍃</span>
+          <span class="leaf-item l5">🍂</span>
+          <span class="leaf-item l6">🍃</span>
+          <span class="leaf-item l7">🍂</span>
+          <span class="leaf-item l8">🍃</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 # ── CSS + Falling Leaves (all inline) ────────────────────────────────────────
@@ -82,49 +80,69 @@ st.markdown("""
 }
 html, body, [class*="css"] {
   font-family: 'DM Sans', sans-serif !important;
-  color: #1a2e1a !important;
+  color: #111111 !important;
 }
 .stApp {
   background: #ffffff !important;
   min-height: 100vh;
   overflow-x: hidden;
 }
-/* falling leaves */
-.leaf {
+/* falling leaves (works without JS) */
+.leaf-layer {
   position: fixed;
-  top: -90px;
-  z-index: 0;
+  inset: 0;
   pointer-events: none;
-  animation: leafFall linear infinite, leafSway ease-in-out infinite alternate;
+  z-index: 2;
+  overflow: hidden;
+}
+.leaf-item {
+  position: fixed;
+  top: -12vh;
+  z-index: 2;
+  pointer-events: none;
+  font-size: 1.6rem;
+  opacity: 0.85;
+  animation-name: leafFall, leafSway;
+  animation-timing-function: linear, ease-in-out;
+  animation-iteration-count: infinite, infinite;
+  animation-direction: normal, alternate;
 }
 @keyframes leafFall {
-  0%   { transform: translateY(0) rotate(0deg); }
-  100% { transform: translateY(110vh) rotate(380deg); }
+  0%   { transform: translateY(0) rotate(0deg); opacity: 0.85; }
+  100% { transform: translateY(120vh) rotate(360deg); opacity: 0.95; }
 }
 @keyframes leafSway {
-  0%   { margin-left: 0; }
-  100% { margin-left: 55px; }
+  0%   { margin-left: -10px; }
+  100% { margin-left: 26px; }
 }
+.l1 { left: 6%;  animation-duration: 11s, 3.1s; animation-delay: 0s, 0s; }
+.l2 { left: 17%; animation-duration: 14s, 2.8s; animation-delay: 1.1s, 0.3s; }
+.l3 { left: 29%; animation-duration: 12s, 3.2s; animation-delay: 2.2s, 0.8s; }
+.l4 { left: 41%; animation-duration: 15s, 2.9s; animation-delay: 0.8s, 0.2s; }
+.l5 { left: 55%; animation-duration: 13s, 3.0s; animation-delay: 1.9s, 0.5s; }
+.l6 { left: 69%; animation-duration: 16s, 3.3s; animation-delay: 2.9s, 0.7s; }
+.l7 { left: 82%; animation-duration: 12.5s, 2.7s; animation-delay: 0.5s, 0.4s; }
+.l8 { left: 93%; animation-duration: 14.5s, 3.1s; animation-delay: 1.6s, 0.6s; }
 .main-title {
   font-family: 'Playfair Display', serif !important;
   font-size: 2.8rem !important;
-  color: #1b4332 !important;
+  color: #111111 !important;
   text-align: center;
   margin-bottom: 0 !important;
-  text-shadow: 0 2px 10px rgba(27,67,50,0.13);
-  position: relative; z-index: 1;
+  text-shadow: none;
+  position: relative; z-index: 3;
 }
 .sub-title {
   text-align: center;
   font-size: 1rem;
-  color: #2d6a4f !important;
+  color: #111111 !important;
   margin-bottom: 1.8rem;
-  position: relative; z-index: 1;
+  position: relative; z-index: 3;
 }
 .upload-wrapper {
   max-width: 460px;
   margin: 0 auto 1.4rem auto;
-  position: relative; z-index: 1;
+  position: relative; z-index: 3;
 }
 .upload-wrapper [data-testid="stFileUploader"] {
   background: var(--card-bg) !important;
@@ -157,7 +175,7 @@ html, body, [class*="css"] {
 .section-icon  { font-size: 2rem; margin-bottom: 0.25rem; }
 .section-header {
   font-family: 'Playfair Display', serif; font-size: 1.1rem;
-  color: #1b4332; font-weight: 700; margin-bottom: 0.55rem;
+  color: #111111; font-weight: 700; margin-bottom: 0.55rem;
 }
 .status-pill {
   display: inline-block; color: #fff; border-radius: 999px;
@@ -168,21 +186,21 @@ html, body, [class*="css"] {
   display: inline-block; background: rgba(82,183,136,0.16);
   border: 1px solid #b7e4c7; border-radius: 8px;
   padding: 0.18rem 0.65rem; font-size: 0.82rem;
-  color: #1b4332; margin: 0.22rem 0.08rem;
+  color: #111111; margin: 0.22rem 0.08rem;
 }
 .fun-fact {
   background: linear-gradient(120deg, #d8f3dc, #b7e4c7);
   border-left: 5px solid #2d6a4f; border-radius: 12px;
   padding: 0.85rem 1.2rem; margin-top: 1.4rem;
-  font-size: 0.95rem; color: #1b4332;
+  font-size: 0.95rem; color: #111111;
   box-shadow: 0 3px 12px rgba(27,67,50,0.1);
-  position: relative; z-index: 1;
+  position: relative; z-index: 3;
 }
 .plant-name {
   font-family: 'Playfair Display', serif !important;
-  font-size: 1.85rem !important; color: #1b4332 !important; margin-bottom: 0 !important;
+  font-size: 1.85rem !important; color: #111111 !important; margin-bottom: 0 !important;
 }
-.confidence { color: #2d6a4f !important; font-size: 0.88rem; margin-bottom: 0.7rem; }
+.confidence { color: #111111 !important; font-size: 0.88rem; margin-bottom: 0.7rem; }
 .badge {
   display: inline-block; padding: 0.18rem 0.7rem;
   border-radius: 999px; color: #fff; font-size: 0.8rem; margin-bottom: 0.25rem;
@@ -193,7 +211,7 @@ section[data-testid="stSidebar"] {
 }
 .sidebar-title {
   font-family: 'Playfair Display', serif; font-size: 1.15rem;
-  color: #1b4332; font-weight: 700; margin-bottom: 0.7rem;
+  color: #111111; font-weight: 700; margin-bottom: 0.7rem;
   padding-bottom: 0.35rem; border-bottom: 2px solid #b7e4c7;
 }
 [data-testid="stExpander"] {
@@ -202,30 +220,8 @@ section[data-testid="stSidebar"] {
   margin-bottom: 0.45rem !important;
 }
 hr { border-color: #b7e4c7 !important; margin: 1.4rem 0 !important; }
-.block-container { position: relative !important; z-index: 1 !important; }
+.block-container { position: relative !important; z-index: 3 !important; }
 </style>
-
-<script>
-(function(){
-  var S=[
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 60"><path d="M20 2C5 15 0 35 20 58 40 35 35 15 20 2Z" fill="CLR" opacity=".85"/><line x1="20" y1="5" x2="20" y2="55" stroke="#1b4332" stroke-width="1.1" opacity=".4"/></svg>',
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 55"><path d="M25 3C5 3 0 25 10 45c5 10 25 10 30 0C50 25 45 3 25 3Z" fill="CLR" opacity=".82"/><line x1="25" y1="8" x2="25" y2="50" stroke="#1b4332" stroke-width="1" opacity=".4"/></svg>',
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 65"><path d="M15 1C4 18 2 40 15 64 28 40 26 18 15 1Z" fill="CLR" opacity=".80"/><line x1="15" y1="4" x2="15" y2="60" stroke="#1b4332" stroke-width="1" opacity=".35"/></svg>',
-  ];
-  var C=['#40916c','#52b788','#74c69d','#2d6a4f','#95d5b2','#1b4332'];
-  function r(a,b){return a+Math.random()*(b-a);}
-  function make(){
-    var d=document.createElement('div');d.className='leaf';
-    var sz=r(20,50),clr=C[Math.floor(Math.random()*C.length)];
-    d.innerHTML=S[Math.floor(Math.random()*S.length)].replace('CLR',clr);
-    var dur=r(7,18),delay=r(0,12),sway=r(2,5);
-    d.style.cssText='position:fixed;left:'+r(0,100)+'vw;top:-90px;width:'+sz+'px;height:auto;z-index:0;pointer-events:none;opacity:'+r(0.55,0.9)+';animation:leafFall '+dur+'s '+delay+'s linear infinite,leafSway '+sway+'s ease-in-out infinite alternate;';
-    document.body.appendChild(d);
-  }
-  function init(){for(var i=0;i<28;i++)make();}
-  document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init):init();
-})();
-</script>
 """, unsafe_allow_html=True)
 
 # ── Config ────────────────────────────────────────────────────────────────────
@@ -415,6 +411,7 @@ with st.sidebar:
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 confetti_once()
+render_falling_leaves()
 st.markdown('<h1 class="main-title">🌿 PlantScan AI</h1>', unsafe_allow_html=True)
 st.markdown('<p class="sub-title">Upload a photo of any plant and get an instant expert analysis</p>', unsafe_allow_html=True)
 
