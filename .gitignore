@@ -1,0 +1,23 @@
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+env/
+venv/
+.venv/
+ENV/
+dist/
+build/
+.idea/
+.vscode/
+.pytest_cache/
+
+# Streamlit / app data
+.streamlit/
+data/
+history.json
+*.log
+
+# OS
+Thumbs.db
+Desktop.ini
