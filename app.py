@@ -169,9 +169,10 @@ html, body, [class*="css"] {
   background: var(--card-bg); border-radius: 18px;
   padding: 1.2rem 1rem 0.8rem; box-shadow: var(--shadow);
   backdrop-filter: blur(8px); border: 1px solid rgba(178,220,194,0.55);
-  text-align: center; margin-bottom: 1rem;
+  text-align: center; margin-bottom: 1rem; color: #111111 !important;
   position: relative; z-index: 1;
 }
+.section-card * { color: #111111 !important; }
 .section-icon  { font-size: 2rem; margin-bottom: 0.25rem; }
 .section-header {
   font-family: 'Playfair Display', serif; font-size: 1.1rem;
@@ -204,6 +205,14 @@ html, body, [class*="css"] {
 .badge {
   display: inline-block; padding: 0.18rem 0.7rem;
   border-radius: 999px; color: #fff; font-size: 0.8rem; margin-bottom: 0.25rem;
+}
+/* Keep generated result text in section columns readable on white background */
+div[data-testid="column"] p,
+div[data-testid="column"] li,
+div[data-testid="column"] blockquote,
+div[data-testid="column"] label,
+div[data-testid="column"] [data-testid="stMarkdownContainer"] {
+  color: #111111 !important;
 }
 section[data-testid="stSidebar"] {
   background: #ffffff !important;
