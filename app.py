@@ -228,13 +228,25 @@ section[data-testid="stSidebar"] {
 /* Sidebar expand/collapse arrow button */
 button[kind="header"][aria-label*="sidebar"],
 button[data-testid="collapsedControl"],
-button[data-testid="baseButton-headerNoPadding"] {
+button[data-testid="baseButton-headerNoPadding"],
+div[data-testid="stSidebarCollapsedControl"] button {
   color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
 }
 button[kind="header"][aria-label*="sidebar"] svg,
 button[data-testid="collapsedControl"] svg,
-button[data-testid="baseButton-headerNoPadding"] svg {
+button[data-testid="baseButton-headerNoPadding"] svg,
+div[data-testid="stSidebarCollapsedControl"] button svg {
   fill: #ffffff !important;
+  stroke: #ffffff !important;
+  color: #ffffff !important;
+}
+button[kind="header"][aria-label*="sidebar"] svg *,
+button[data-testid="collapsedControl"] svg *,
+button[data-testid="baseButton-headerNoPadding"] svg *,
+div[data-testid="stSidebarCollapsedControl"] button svg * {
+  fill: #ffffff !important;
+  stroke: #ffffff !important;
   color: #ffffff !important;
 }
 .sidebar-title {
