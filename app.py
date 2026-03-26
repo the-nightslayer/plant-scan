@@ -82,6 +82,15 @@ html, body, [class*="css"] {
   font-family: 'DM Sans', sans-serif !important;
   color: #111111 !important;
 }
+.stApp p,
+.stApp li,
+.stApp span,
+.stApp label,
+.stApp small,
+.stApp div[data-testid="stMarkdownContainer"],
+.stApp div[data-testid="stMarkdownContainer"] * {
+  color: #111111 !important;
+}
 .stApp {
   background: #ffffff !important;
   min-height: 100vh;
@@ -205,6 +214,12 @@ html, body, [class*="css"] {
 .badge {
   display: inline-block; padding: 0.18rem 0.7rem;
   border-radius: 999px; color: #fff; font-size: 0.8rem; margin-bottom: 0.25rem;
+}
+.status-pill,
+.status-pill *,
+.badge,
+.badge * {
+  color: #ffffff !important;
 }
 /* Keep generated result text in section columns readable on white background */
 div[data-testid="column"] p,
