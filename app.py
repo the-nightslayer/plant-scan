@@ -225,6 +225,18 @@ section[data-testid="stSidebar"] {
   background: #ffffff !important;
   border-right: 1px solid rgba(45,106,79,0.12) !important;
 }
+/* Sidebar expand/collapse arrow button */
+button[kind="header"][aria-label*="sidebar"],
+button[data-testid="collapsedControl"],
+button[data-testid="baseButton-headerNoPadding"] {
+  color: #ffffff !important;
+}
+button[kind="header"][aria-label*="sidebar"] svg,
+button[data-testid="collapsedControl"] svg,
+button[data-testid="baseButton-headerNoPadding"] svg {
+  fill: #ffffff !important;
+  color: #ffffff !important;
+}
 .sidebar-title {
   font-family: 'Playfair Display', serif; font-size: 1.15rem;
   color: #111111; font-weight: 700; margin-bottom: 0.7rem;
