@@ -7,6 +7,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 import uuid
+import streamlit.components.v1 as components
 from groq import Groq
 from PIL import Image
 import io
@@ -18,6 +19,53 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
+
+def render_site_logo() -> None:
+    """
+    Optional: show Thomas More logo if you add it to the project.
+    Place one of these files:
+    - assets/tomasmore-logo.png
+    - assets/tomasmore-logo.jpg
+    - assets/tomasmore-logo.webp
+    """
+    candidates = [
+        Path("assets/tomasmore-logo.png"),
+        Path("assets/tomasmore-logo.jpg"),
+        Path("assets/tomasmore-logo.webp"),
+    ]
+    for p in candidates:
+        if p.exists():
+            st.sidebar.image(str(p), use_container_width=True)
+            return
+
+
+def confetti_once() -> None:
+    if not st.session_state.get("_confetti_pending", False):
+        return
+    components.html(
+        """
+        <div id="confetti-root"></div>
+        <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+        <script>
+          (function () {
+            function burst() {
+              if (!window.confetti) return;
+              var end = Date.now() + 900;
+              (function frame() {
+                window.confetti({ particleCount: 6, spread: 70, origin: { y: 0.8 } });
+                window.confetti({ particleCount: 5, spread: 90, origin: { y: 0.7 } });
+                if (Date.now() < end) requestAnimationFrame(frame);
+              })();
+            }
+            burst();
+          })();
+        </script>
+        """,
+        height=0,
+    )
+    st.session_state["_confetti_pending"] = False
+
 
 # ── CSS + Falling Leaves (all inline) ────────────────────────────────────────
 st.markdown("""
@@ -37,7 +85,7 @@ html, body, [class*="css"] {
   color: #1a2e1a !important;
 }
 .stApp {
-  background: linear-gradient(160deg, #d8f3dc 0%, #b7e4c7 45%, #95d5b2 100%) !important;
+  background: #ffffff !important;
   min-height: 100vh;
   overflow-x: hidden;
 }
@@ -140,8 +188,8 @@ html, body, [class*="css"] {
   border-radius: 999px; color: #fff; font-size: 0.8rem; margin-bottom: 0.25rem;
 }
 section[data-testid="stSidebar"] {
-  background: linear-gradient(180deg, #d8f3dc 0%, #b7e4c7 100%) !important;
-  border-right: 2px solid #b7e4c7 !important;
+  background: #ffffff !important;
+  border-right: 1px solid rgba(45,106,79,0.12) !important;
 }
 .sidebar-title {
   font-family: 'Playfair Display', serif; font-size: 1.15rem;
@@ -321,6 +369,7 @@ client = get_groq_client(API_KEY)
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
+    render_site_logo()
     st.markdown('<div class="sidebar-title">📜 Scan History</div>', unsafe_allow_html=True)
     sq = st.text_input("🔍 Search history", placeholder="e.g. Rose, Oak…")
     history = load_history()
@@ -365,6 +414,7 @@ with st.sidebar:
         )
 
 # ── Main ──────────────────────────────────────────────────────────────────────
+confetti_once()
 st.markdown('<h1 class="main-title">🌿 PlantScan AI</h1>', unsafe_allow_html=True)
 st.markdown('<p class="sub-title">Upload a photo of any plant and get an instant expert analysis</p>', unsafe_allow_html=True)
 
@@ -391,6 +441,7 @@ if uploaded:
                 st.stop()
 
         add_to_history(result.get("plant_name","Unknown"), result, b64)
+        st.session_state["_confetti_pending"] = True
 
         st.markdown("---")
         st.markdown(f'<h2 class="plant-name">🌿 {result.get("plant_name","Unknown plant")}</h2>', unsafe_allow_html=True)
