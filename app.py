@@ -39,14 +39,6 @@ def render_site_logo() -> None:
             return
 
 
-def confetti_once() -> None:
-    if not st.session_state.get("_confetti_pending", False):
-        return
-    # Reliable visual celebration in Streamlit Cloud environments.
-    st.balloons()
-    st.session_state["_confetti_pending"] = False
-
-
 def render_falling_leaves() -> None:
     st.markdown(
         """
@@ -434,7 +426,6 @@ with st.sidebar:
         )
 
 # ── Main ──────────────────────────────────────────────────────────────────────
-confetti_once()
 render_falling_leaves()
 st.markdown('<h1 class="main-title">🌿 PlantScan AI</h1>', unsafe_allow_html=True)
 st.markdown('<p class="sub-title">Upload a photo of any plant and get an instant expert analysis</p>', unsafe_allow_html=True)
@@ -462,7 +453,8 @@ if uploaded:
                 st.stop()
 
         add_to_history(result.get("plant_name","Unknown"), result, b64)
-        st.session_state["_confetti_pending"] = True
+        # Trigger celebration immediately after a successful analysis.
+        st.balloons()
 
         st.markdown("---")
         st.markdown(f'<h2 class="plant-name">🌿 {result.get("plant_name","Unknown plant")}</h2>', unsafe_allow_html=True)
