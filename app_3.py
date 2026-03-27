@@ -453,10 +453,10 @@ section[data-testid="stMain"] .status-pill {
   font-size: 0.8rem; margin-bottom: 0.25rem;
 }
 
-/* ── Sidebar: force black text everywhere ── */
+/* ── Sidebar: orange text everywhere ── */
 section[data-testid="stSidebar"] {
   background: linear-gradient(180deg, #f0f7ee 0%, #e8f5e9 100%) !important;
-  border-right: 2px solid rgba(45,106,79,0.18) !important;
+  border-right: 2px solid rgba(232,93,4,0.18) !important;
 }
 
 section[data-testid="stSidebar"],
@@ -468,8 +468,8 @@ section[data-testid="stSidebar"] label,
 section[data-testid="stSidebar"] summary,
 section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"],
 section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] * {
-  color: #111111 !important;
-  -webkit-text-fill-color: #111111 !important;
+  color: #e85d04 !important;
+  -webkit-text-fill-color: #e85d04 !important;
 }
 
 /* Expander header text specifically */
@@ -477,22 +477,22 @@ section[data-testid="stSidebar"] details > summary,
 section[data-testid="stSidebar"] details > summary *,
 section[data-testid="stSidebar"] .streamlit-expanderHeader,
 section[data-testid="stSidebar"] .streamlit-expanderHeader * {
-  color: #111111 !important;
-  -webkit-text-fill-color: #111111 !important;
+  color: #e85d04 !important;
+  -webkit-text-fill-color: #e85d04 !important;
 }
 
 /* st.caption inside sidebar */
 section[data-testid="stSidebar"] .stCaption,
 section[data-testid="stSidebar"] .stCaption * {
-  color: #444444 !important;
-  -webkit-text-fill-color: #444444 !important;
+  color: #e85d04 !important;
+  -webkit-text-fill-color: #e85d04 !important;
 }
 
 /* st.info inside sidebar */
 section[data-testid="stSidebar"] .stAlert,
 section[data-testid="stSidebar"] .stAlert * {
-  color: #111111 !important;
-  -webkit-text-fill-color: #111111 !important;
+  color: #e85d04 !important;
+  -webkit-text-fill-color: #e85d04 !important;
 }
 
 .sidebar-title {
