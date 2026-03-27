@@ -295,6 +295,19 @@ html, body, [class*="css"] {
   stroke: #b7e4c7 !important;
 }
 
+/* ── Override: keep upload zone text white ── */
+.upload-wrapper *,
+.upload-wrapper p,
+.upload-wrapper span,
+.upload-wrapper small,
+.upload-wrapper div,
+.upload-wrapper label,
+.upload-wrapper [data-testid="stMarkdownContainer"],
+.upload-wrapper [data-testid="stMarkdownContainer"] * {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
 .stButton > button[kind="primary"] {
   background: linear-gradient(135deg, #2d6a4f 0%, #1b4332 100%) !important;
   color: #fff !important; border: none !important;
