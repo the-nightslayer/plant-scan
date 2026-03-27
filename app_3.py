@@ -167,6 +167,14 @@ html, body, [class*="css"] {
   margin: 0 auto 1.4rem auto;
   position: relative; z-index: 3;
 }
+/* Label above the upload box → white */
+.upload-wrapper > label,
+.upload-wrapper [data-testid="stFileUploaderDropzoneInput"] + label,
+.upload-wrapper p,
+.upload-wrapper span:not([class*="leaf"]) {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
 /* Outer container — dark forest green */
 .upload-wrapper [data-testid="stFileUploader"] {
   background: linear-gradient(135deg,
@@ -191,6 +199,17 @@ html, body, [class*="css"] {
 .upload-wrapper [data-testid="stFileUploader"] label,
 .upload-wrapper [data-testid="stFileUploader"] [data-testid="stMarkdownContainer"],
 .upload-wrapper [data-testid="stFileUploader"] [data-testid="stMarkdownContainer"] * {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Label rendered by Streamlit above the drop-zone */
+.upload-wrapper [data-testid="stFileUploaderDropzoneInstructions"] *,
+.upload-wrapper [data-testid="stFileUploaderDropzone"] *,
+.upload-wrapper [data-testid="stWidgetLabel"] *,
+.upload-wrapper [data-testid="stWidgetLabel"],
+.upload-wrapper label,
+.upload-wrapper label * {
   color: #ffffff !important;
   -webkit-text-fill-color: #ffffff !important;
 }
@@ -561,7 +580,7 @@ if uploaded:
                 st.stop()
 
         add_to_history(result.get("plant_name", "Unknown"), result, b64)
-        st.balloons()
+        render_falling_leaves()
 
         st.markdown("---")
         st.markdown(
