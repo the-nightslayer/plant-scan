@@ -52,90 +52,106 @@ def render_falling_leaves() -> None:
 
 def render_leaf_confetti() -> None:
     """
-    Two-part confetti system that works around Streamlit's limitations:
+    Leaf confetti that actually works in Streamlit.
 
-    Part 1 – inject a one-time postMessage LISTENER into the parent page via
-    st.markdown.  Streamlit strips <script> tags, but we can embed JS inside a
-    <svg><foreignObject><body onload=...> trick which is not stripped.
-
-    Part 2 – fire the confetti trigger from inside a components.html iframe via
-    window.parent.postMessage.  The iframe JS executes reliably; it just can't
-    touch the parent DOM directly.  Instead it messages the listener we planted
-    in Part 1, which then spawns the leaves on the real page.
+    Strategy: components.html() renders a real <iframe> whose JS executes.
+    We make that iframe cover the ENTIRE screen by injecting a <style> block
+    into the PARENT document via document.createElement from inside the iframe
+    using window.parent — this is allowed because Streamlit serves both the
+    outer page and the iframe from the same origin (localhost or the deploy URL).
+    The style gives the iframe itself position:fixed + full viewport size.
+    Leaves are then spawned as position:fixed elements inside the iframe,
+    which fills the whole screen, so they appear to cover the whole page.
+    After the animation finishes the injected style is removed.
     """
     import streamlit.components.v1 as components
 
-    # ── Part 1: plant the listener once in the parent document ──────────────
-    # We use an <img onerror> trick: a broken image whose onerror handler runs
-    # our JS in the parent page context.  Streamlit does NOT strip event attrs
-    # on non-<script> tags.
-    listener_id = "leafConfettiListener"
-    st.markdown(
-        f"""
-        <img src="x" id="{listener_id}_trigger"
-          onerror="
-            if (!window._leafListenerActive) {{
-              window._leafListenerActive = true;
-              var style = document.createElement('style');
-              style.textContent = `
-                @keyframes _lfDrop {{
-                  0%   {{ opacity:1;  transform:translateY(-80px) rotate(0deg); }}
-                  85%  {{ opacity:1; }}
-                  100% {{ opacity:0;  transform:translateY(110vh) translateX(var(--sw,0px)) rotate(720deg); }}
-                }}
-                ._lf {{
-                  position:fixed; top:0; pointer-events:none;
-                  z-index:2147483647; animation:_lfDrop linear forwards;
-                  user-select:none; font-family: serif;
-                }}
-              `;
-              document.head.appendChild(style);
-              window.addEventListener('message', function(e) {{
-                if (e.data && e.data.type === 'LEAF_CONFETTI') {{
-                  var em = ['🍃','🌿','🍂','🌱','🍀','🌾'];
-                  var n = 100, maxLife = 0;
-                  var frag = document.createDocumentFragment();
-                  for (var i = 0; i < n; i++) {{
-                    var el = document.createElement('span');
-                    el.className = '_lf';
-                    el.textContent = em[Math.floor(Math.random() * em.length)];
-                    var left = (Math.random() * 100).toFixed(1);
-                    var sz   = (1.1 + Math.random() * 2.0).toFixed(2);
-                    var dur  = (3.5 + Math.random() * 4.5).toFixed(2);
-                    var del  = (Math.random() * 2.5).toFixed(2);
-                    var sw   = (Math.random() * 240 - 120).toFixed(0) + 'px';
-                    var life = parseFloat(dur) + parseFloat(del);
-                    if (life > maxLife) maxLife = life;
-                    el.style.cssText =
-                      'left:' + left + 'vw;font-size:' + sz + 'rem;' +
-                      '--sw:' + sw + ';animation-duration:' + dur +
-                      's;animation-delay:' + del + 's;';
-                    frag.appendChild(el);
-                  }}
-                  document.body.appendChild(frag);
-                  setTimeout(function() {{
-                    document.querySelectorAll('._lf').forEach(function(x){{x.remove();}});
-                  }}, (maxLife + 1) * 1000);
-                }}
-              }});
-            }}
-            this.style.display='none';
-          "
-          style="display:none" alt="">
-        """,
-        unsafe_allow_html=True,
-    )
+    # Give this iframe a unique ID so we can target it from inside
+    iframe_id = f"lc_{uuid.uuid4().hex[:8]}"
 
-    # ── Part 2: fire the trigger from inside a components.html iframe ────────
-    components.html(
-        """
-        <script>
-          window.parent.postMessage({ type: 'LEAF_CONFETTI' }, '*');
-        </script>
-        """,
-        height=0,
-        scrolling=False,
-    )
+    html = f"""<!DOCTYPE html>
+<html>
+<head>
+<style>
+* {{ margin:0; padding:0; }}
+html, body {{ width:100%; height:100%; overflow:hidden; background:transparent; }}
+@keyframes drop {{
+  0%   {{ opacity:1; transform:translateY(-80px) translateX(0) rotate(0deg); }}
+  80%  {{ opacity:1; }}
+  100% {{ opacity:0; transform:translateY(105vh) translateX(var(--sway,0px)) rotate(800deg); }}
+}}
+.lf {{
+  position:fixed; top:0; pointer-events:none;
+  animation:drop linear forwards;
+  font-family:"Segoe UI Emoji","Apple Color Emoji",serif;
+}}
+</style>
+</head>
+<body>
+<script>
+(function() {{
+  // ── Step 1: make THIS iframe cover the full parent viewport ──
+  var FRAME_ID = "{iframe_id}";
+  try {{
+    // Find our own iframe element in the parent DOM and make it fullscreen
+    var frames = window.parent.document.querySelectorAll('iframe');
+    var self;
+    for (var i = 0; i < frames.length; i++) {{
+      try {{
+        if (frames[i].contentWindow === window) {{ self = frames[i]; break; }}
+      }} catch(e) {{}}
+    }}
+    if (self) {{
+      self.setAttribute('data-lc', FRAME_ID);
+      self.style.cssText = [
+        'position:fixed', 'top:0', 'left:0',
+        'width:100vw',    'height:100vh',
+        'z-index:2147483647', 'pointer-events:none',
+        'border:none',    'background:transparent'
+      ].join('!important;') + '!important';
+    }}
+  }} catch(e) {{
+    // cross-origin guard — fall back to tall inline iframe
+  }}
+
+  // ── Step 2: spawn leaves inside this (now fullscreen) iframe ──
+  var EMOJIS = ['🍃','🌿','🍂','🌱','🍀','🌾'];
+  var COUNT  = 120;
+  var maxEnd = 0;
+  var frag   = document.createDocumentFragment();
+
+  for (var i = 0; i < COUNT; i++) {{
+    var el    = document.createElement('span');
+    el.className = 'lf';
+    el.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+    var left  = (Math.random() * 100).toFixed(2);
+    var size  = (1.2 + Math.random() * 2.0).toFixed(2);
+    var dur   = (3.5 + Math.random() * 5.0).toFixed(2);
+    var delay = (Math.random() * 3.0).toFixed(2);
+    var sway  = ((Math.random() * 260) - 130).toFixed(0) + 'px';
+    var end   = parseFloat(dur) + parseFloat(delay);
+    if (end > maxEnd) maxEnd = end;
+    el.style.cssText = 'left:'+left+'vw;font-size:'+size+'rem;--sway:'+sway
+      +';animation-duration:'+dur+'s;animation-delay:'+delay+'s';
+    frag.appendChild(el);
+  }}
+  document.body.appendChild(frag);
+
+  // ── Step 3: clean up — restore iframe to 0px after animation ──
+  setTimeout(function() {{
+    try {{
+      var f = window.parent.document.querySelector('iframe[data-lc="'+FRAME_ID+'"]');
+      if (f) {{ f.style.cssText = 'height:0px!important;width:0px!important;border:none'; }}
+    }} catch(e) {{}}
+    document.body.innerHTML = '';
+  }}, (maxEnd + 1.5) * 1000);
+}})();
+</script>
+</body>
+</html>"""
+
+    components.html(html, height=1, scrolling=False)
+
 
 
 # ── CSS ───────────────────────────────────────────────────────────────────────
