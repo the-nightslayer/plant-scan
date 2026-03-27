@@ -19,6 +19,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+
 def render_site_logo() -> None:
     """
     Optional: show Thomas More logo if you add it to the project.
@@ -37,84 +38,26 @@ def render_site_logo() -> None:
             st.sidebar.image(str(p), use_container_width=True)
             return
 
+
 def render_falling_leaves() -> None:
-    """Inject a JS-driven leaf burst: 40 leaves rain down for ~4 s then vanish."""
     st.markdown(
         """
-        <script>
-        (function() {
-          const EMOJIS = ['🍃','🌿','🍂','🍃','🍂','🌱','🍂','🍃','🌿','🍃'];
-          const COUNT  = 40;
-          const host   = document.createElement('div');
-          host.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:99999;overflow:hidden;';
-          document.body.appendChild(host);
-          for (let i = 0; i < COUNT; i++) {
-            const leaf  = document.createElement('span');
-            const dur   = (8 + Math.random() * 6).toFixed(2);
-            const delay = (Math.random() * 2).toFixed(2);
-            const left  = (Math.random() * 100).toFixed(1);
-            const size  = (1.2 + Math.random() * 1.4).toFixed(2);
-            const sway  = (-20 + Math.random() * 40).toFixed(1);
-            leaf.textContent = EMOJIS[i % EMOJIS.length];
-            leaf.style.cssText =
-              'position:absolute;top:-10vh;left:' + left + '%;font-size:' + size + 'rem;' +
-              'opacity:0.92;animation:leafBurst ' + dur + 's ' + delay + 's linear 1 forwards;' +
-              '--sway:' + sway + 'px;filter:drop-shadow(0 2px 6px rgba(27,67,50,0.25));';
-            host.appendChild(leaf);
-          }
-          const style = document.createElement('style');
-          style.textContent =
-            '@keyframes leafBurst{' +
-            '0%{transform:translateY(0) translateX(0px) rotate(0deg);opacity:0.92}' +
-            '50%{transform:translateY(55vh) translateX(var(--sway)) rotate(180deg);opacity:0.88}' +
-            '100%{transform:translateY(115vh) translateX(0px) rotate(360deg);opacity:0}}';
-          document.head.appendChild(style);
-          setTimeout(function(){ host.remove(); style.remove(); }, 14000);
-        })();
-        </script>
+        <div class="leaf-layer" aria-hidden="true">
+          <span class="leaf-item l1">🍃</span>
+          <span class="leaf-item l2">🍃</span>
+          <span class="leaf-item l3">🍂</span>
+          <span class="leaf-item l4">🍃</span>
+          <span class="leaf-item l5">🍂</span>
+          <span class="leaf-item l6">🍃</span>
+          <span class="leaf-item l7">🍂</span>
+          <span class="leaf-item l8">🍃</span>
+        </div>
         """,
         unsafe_allow_html=True,
     )
 
 
-def fix_upload_label_color() -> None:
-    """Force the Streamlit file-uploader label to white via JS."""
-    st.markdown(
-        """
-        <script>
-        (function applyWhiteLabel() {
-          function doFix() {
-            document.querySelectorAll('[data-testid="stFileUploader"]').forEach(function(uploader) {
-              var block = uploader.closest('[data-testid="element-container"]') || uploader.parentElement;
-              if (block) {
-                var prev = block.previousElementSibling;
-                if (prev) {
-                  prev.querySelectorAll('label,p,span,div,small').forEach(function(el) {
-                    el.style.setProperty('color','#ffffff','important');
-                    el.style.setProperty('-webkit-text-fill-color','#ffffff','important');
-                  });
-                }
-              }
-              uploader.querySelectorAll('label,p,span,small,div').forEach(function(el) {
-                el.style.setProperty('color','#ffffff','important');
-                el.style.setProperty('-webkit-text-fill-color','#ffffff','important');
-              });
-            });
-          }
-          doFix();
-          setTimeout(doFix, 300);
-          setTimeout(doFix, 900);
-          setTimeout(doFix, 2000);
-          var obs = new MutationObserver(doFix);
-          obs.observe(document.body, {childList:true, subtree:true});
-          setTimeout(function(){ obs.disconnect(); }, 10000);
-        })();
-        </script>
-        """,
-        unsafe_allow_html=True,
-    )
-
-# ── CSS ───────────────────────────────────────────────────────────────────────
+# ── CSS + Falling Leaves (all inline) ────────────────────────────────────────
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500&display=swap');
@@ -124,214 +67,153 @@ st.markdown("""
   --green-mid:   #2d6a4f;
   --green-light: #52b788;
   --green-pale:  #b7e4c7;
-  --bark:        #8b5e3c;
-  --soil:        #5c3d2e;
-  --moss:        #6a994e;
-  --card-bg:     rgba(255,252,245,0.90);
+  --card-bg:     rgba(255,255,255,0.84);
   --shadow:      0 8px 32px rgba(27,67,50,0.18);
 }
-
 html, body, [class*="css"] {
   font-family: 'DM Sans', sans-serif !important;
   color: #111111 !important;
 }
-
-/* ── Nature-textured background ── */
-.stApp {
-  background-color: #f0f7ee !important;
-  background-image:
-    radial-gradient(ellipse at 10% 20%, rgba(82,183,136,0.18) 0%, transparent 55%),
-    radial-gradient(ellipse at 90% 80%, rgba(106,153,78,0.14) 0%, transparent 55%),
-    radial-gradient(ellipse at 50% 50%, rgba(183,228,199,0.10) 0%, transparent 70%),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E") !important;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-/* Leaf decorative border top */
-.stApp::before {
-  content: '';
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  height: 5px;
-  background: linear-gradient(90deg,
-    #1b4332 0%, #2d6a4f 20%, #52b788 40%,
-    #6a994e 60%, #2d6a4f 80%, #1b4332 100%);
-  z-index: 9999;
-}
-
-/* ── Falling leaves handled by JS burst (render_falling_leaves) ── */
-
-/* ── Typography ── */
-.stApp p, .stApp li, .stApp span,
-.stApp label, .stApp small,
+.stApp p,
+.stApp li,
+.stApp span,
+.stApp label,
+.stApp small,
 .stApp div[data-testid="stMarkdownContainer"],
 .stApp div[data-testid="stMarkdownContainer"] * {
   color: #111111 !important;
 }
-
+.stApp {
+  background: #ffffff !important;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+/* falling leaves (works without JS) */
+.leaf-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  overflow: hidden;
+}
+.leaf-item {
+  position: fixed;
+  top: -12vh;
+  z-index: 2;
+  pointer-events: none;
+  font-size: 1.6rem;
+  opacity: 0.85;
+  animation-name: leafFall, leafSway;
+  animation-timing-function: linear, ease-in-out;
+  animation-iteration-count: infinite, infinite;
+  animation-direction: normal, alternate;
+}
+@keyframes leafFall {
+  0%   { transform: translateY(0) rotate(0deg); opacity: 0.85; }
+  100% { transform: translateY(120vh) rotate(360deg); opacity: 0.95; }
+}
+@keyframes leafSway {
+  0%   { margin-left: -10px; }
+  100% { margin-left: 26px; }
+}
+.l1 { left: 6%;  animation-duration: 11s, 3.1s; animation-delay: 0s, 0s; }
+.l2 { left: 17%; animation-duration: 14s, 2.8s; animation-delay: 1.1s, 0.3s; }
+.l3 { left: 29%; animation-duration: 12s, 3.2s; animation-delay: 2.2s, 0.8s; }
+.l4 { left: 41%; animation-duration: 15s, 2.9s; animation-delay: 0.8s, 0.2s; }
+.l5 { left: 55%; animation-duration: 13s, 3.0s; animation-delay: 1.9s, 0.5s; }
+.l6 { left: 69%; animation-duration: 16s, 3.3s; animation-delay: 2.9s, 0.7s; }
+.l7 { left: 82%; animation-duration: 12.5s, 2.7s; animation-delay: 0.5s, 0.4s; }
+.l8 { left: 93%; animation-duration: 14.5s, 3.1s; animation-delay: 1.6s, 0.6s; }
 .main-title {
   font-family: 'Playfair Display', serif !important;
   font-size: 2.8rem !important;
-  color: #1b4332 !important;
+  color: #111111 !important;
   text-align: center;
   margin-bottom: 0 !important;
-  text-shadow: 0 2px 8px rgba(27,67,50,0.12);
+  text-shadow: none;
   position: relative; z-index: 3;
 }
 .sub-title {
   text-align: center;
   font-size: 1rem;
-  color: #2d6a4f !important;
+  color: #111111 !important;
   margin-bottom: 1.8rem;
   position: relative; z-index: 3;
-  font-style: italic;
 }
-
-/* ── Upload zone ── */
 .upload-wrapper {
   max-width: 460px;
   margin: 0 auto 1.4rem auto;
   position: relative; z-index: 3;
 }
-/* Label above the upload box → white */
-.upload-wrapper > label,
-.upload-wrapper [data-testid="stFileUploaderDropzoneInput"] + label,
-.upload-wrapper p,
-.upload-wrapper span:not([class*="leaf"]) {
-  color: #ffffff !important;
-  -webkit-text-fill-color: #ffffff !important;
-}
-/* Outer container — dark forest green */
 .upload-wrapper [data-testid="stFileUploader"] {
-  background: linear-gradient(135deg,
-    rgba(27,67,50,0.82) 0%,
-    rgba(45,106,79,0.88) 100%) !important;
+  background: var(--card-bg) !important;
   border: 2px dashed #52b788 !important;
-  border-radius: 18px !important;
+  border-radius: 14px !important;
   padding: 0.6rem 1rem !important;
-  backdrop-filter: blur(8px);
-  box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,0.08);
+  backdrop-filter: blur(6px);
+  box-shadow: var(--shadow);
 }
-.upload-wrapper [data-testid="stFileUploader"] section {
-  padding: 0.5rem !important;
-}
-
-/* ── ALL text inside the upload zone → white ── */
-.upload-wrapper [data-testid="stFileUploader"] *,
-.upload-wrapper [data-testid="stFileUploader"] p,
-.upload-wrapper [data-testid="stFileUploader"] span,
-.upload-wrapper [data-testid="stFileUploader"] small,
-.upload-wrapper [data-testid="stFileUploader"] div,
-.upload-wrapper [data-testid="stFileUploader"] label,
-.upload-wrapper [data-testid="stFileUploader"] [data-testid="stMarkdownContainer"],
-.upload-wrapper [data-testid="stFileUploader"] [data-testid="stMarkdownContainer"] * {
-  color: #ffffff !important;
-  -webkit-text-fill-color: #ffffff !important;
-}
-
-/* Label rendered by Streamlit above the drop-zone */
-.upload-wrapper [data-testid="stFileUploaderDropzoneInstructions"] *,
-.upload-wrapper [data-testid="stFileUploaderDropzone"] *,
-.upload-wrapper [data-testid="stWidgetLabel"] *,
-.upload-wrapper [data-testid="stWidgetLabel"],
-.upload-wrapper label,
-.upload-wrapper label * {
-  color: #ffffff !important;
-  -webkit-text-fill-color: #ffffff !important;
-}
-
-/* Upload icon SVG */
-.upload-wrapper [data-testid="stFileUploader"] svg {
-  fill: #b7e4c7 !important;
-  stroke: #b7e4c7 !important;
-}
-.upload-wrapper [data-testid="stFileUploader"] svg * {
-  fill: #b7e4c7 !important;
-  stroke: #b7e4c7 !important;
-}
-
-/* ── Buttons ── */
+.upload-wrapper [data-testid="stFileUploader"] section { padding: 0.5rem !important; }
 .stButton > button[kind="primary"] {
   background: linear-gradient(135deg, #2d6a4f 0%, #1b4332 100%) !important;
   color: #fff !important; border: none !important;
   border-radius: 12px !important; font-size: 1rem !important;
   font-weight: 600 !important; padding: 0.65rem 1.4rem !important;
-  box-shadow: 0 4px 18px rgba(27,67,50,0.30) !important;
+  box-shadow: 0 4px 18px rgba(27,67,50,0.3) !important;
   transition: transform .15s, box-shadow .15s !important;
 }
 .stButton > button[kind="primary"]:hover {
   transform: translateY(-2px) !important;
-  box-shadow: 0 8px 24px rgba(27,67,50,0.40) !important;
+  box-shadow: 0 8px 24px rgba(27,67,50,0.4) !important;
 }
-
-/* ── Result cards ── */
 .section-card {
-  background: var(--card-bg);
-  border-radius: 18px;
-  padding: 1.2rem 1rem 0.8rem;
-  box-shadow: var(--shadow);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(178,220,194,0.65);
-  text-align: center;
-  margin-bottom: 1rem;
-  color: #111111 !important;
+  background: var(--card-bg); border-radius: 18px;
+  padding: 1.2rem 1rem 0.8rem; box-shadow: var(--shadow);
+  backdrop-filter: blur(8px); border: 1px solid rgba(178,220,194,0.55);
+  text-align: center; margin-bottom: 1rem; color: #111111 !important;
   position: relative; z-index: 1;
-  background-image: radial-gradient(ellipse at 90% 10%, rgba(82,183,136,0.08) 0%, transparent 60%);
 }
 .section-card * { color: #111111 !important; }
-
-.section-icon   { font-size: 2rem;  margin-bottom: 0.25rem; }
+.section-icon  { font-size: 2rem; margin-bottom: 0.25rem; }
 .section-header {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.1rem; color: #1b4332;
-  font-weight: 700; margin-bottom: 0.55rem;
+  font-family: 'Playfair Display', serif; font-size: 1.1rem;
+  color: #111111; font-weight: 700; margin-bottom: 0.55rem;
 }
-
 .status-pill {
-  display: inline-block; color: #fff !important;
-  border-radius: 999px; padding: 0.22rem 1rem;
-  font-weight: 600; font-size: 0.9rem;
-  margin-bottom: 0.45rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.14);
+  display: inline-block; color: #fff; border-radius: 999px;
+  padding: 0.22rem 1rem; font-weight: 600; font-size: 0.9rem;
+  margin-bottom: 0.45rem; box-shadow: 0 2px 8px rgba(0,0,0,0.14);
 }
-
 .mini-badge {
-  display: inline-block;
-  background: rgba(82,183,136,0.16);
-  border: 1px solid #b7e4c7;
-  border-radius: 8px;
-  padding: 0.18rem 0.65rem;
-  font-size: 0.82rem; color: #111111;
-  margin: 0.22rem 0.08rem;
+  display: inline-block; background: rgba(82,183,136,0.16);
+  border: 1px solid #b7e4c7; border-radius: 8px;
+  padding: 0.18rem 0.65rem; font-size: 0.82rem;
+  color: #111111; margin: 0.22rem 0.08rem;
 }
-
 .fun-fact {
   background: linear-gradient(120deg, #d8f3dc, #b7e4c7);
-  border-left: 5px solid #2d6a4f;
-  border-radius: 12px;
-  padding: 0.85rem 1.2rem;
-  margin-top: 1.4rem;
+  border-left: 5px solid #2d6a4f; border-radius: 12px;
+  padding: 0.85rem 1.2rem; margin-top: 1.4rem;
   font-size: 0.95rem; color: #111111;
-  box-shadow: 0 3px 12px rgba(27,67,50,0.10);
+  box-shadow: 0 3px 12px rgba(27,67,50,0.1);
   position: relative; z-index: 3;
 }
-
 .plant-name {
   font-family: 'Playfair Display', serif !important;
-  font-size: 1.85rem !important;
-  color: #1b4332 !important;
-  margin-bottom: 0 !important;
+  font-size: 1.85rem !important; color: #111111 !important; margin-bottom: 0 !important;
 }
-.confidence { color: #2d6a4f !important; font-size: 0.88rem; margin-bottom: 0.7rem; }
-
+.confidence { color: #111111 !important; font-size: 0.88rem; margin-bottom: 0.7rem; }
 .badge {
   display: inline-block; padding: 0.18rem 0.7rem;
-  border-radius: 999px; color: #fff !important;
-  font-size: 0.8rem; margin-bottom: 0.25rem;
+  border-radius: 999px; color: #fff; font-size: 0.8rem; margin-bottom: 0.25rem;
 }
-.status-pill *, .badge * { color: #ffffff !important; }
-
+.status-pill,
+.status-pill *,
+.badge,
+.badge * {
+  color: #ffffff !important;
+}
+/* Keep generated result text in section columns readable on white background */
 div[data-testid="column"] p,
 div[data-testid="column"] li,
 div[data-testid="column"] blockquote,
@@ -339,62 +221,60 @@ div[data-testid="column"] label,
 div[data-testid="column"] [data-testid="stMarkdownContainer"] {
   color: #111111 !important;
 }
-
-/* ── Sidebar ── */
 section[data-testid="stSidebar"] {
-  background: linear-gradient(180deg, #f0f7ee 0%, #e8f5e9 100%) !important;
-  border-right: 2px solid rgba(45,106,79,0.18) !important;
+  background: #ffffff !important;
+  border-right: 1px solid rgba(45,106,79,0.12) !important;
 }
-
+/* Sidebar expand/collapse arrow button */
+button[kind="header"][aria-label*="sidebar"],
+button[data-testid="collapsedControl"],
+button[data-testid="baseButton-headerNoPadding"],
+div[data-testid="stSidebarCollapsedControl"] button {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
 button[kind="header"][aria-label*="sidebar"] svg,
 button[data-testid="collapsedControl"] svg,
 button[data-testid="baseButton-headerNoPadding"] svg,
 div[data-testid="stSidebarCollapsedControl"] button svg {
-  fill: #1b4332 !important; stroke: #1b4332 !important;
+  fill: #ffffff !important;
+  stroke: #ffffff !important;
+  color: #ffffff !important;
 }
-
+button[kind="header"][aria-label*="sidebar"] svg *,
+button[data-testid="collapsedControl"] svg *,
+button[data-testid="baseButton-headerNoPadding"] svg *,
+div[data-testid="stSidebarCollapsedControl"] button svg * {
+  fill: #ffffff !important;
+  stroke: #ffffff !important;
+  color: #ffffff !important;
+}
 .sidebar-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.15rem; color: #1b4332;
-  font-weight: 700; margin-bottom: 0.7rem;
-  padding-bottom: 0.35rem;
-  border-bottom: 2px solid #52b788;
+  font-family: 'Playfair Display', serif; font-size: 1.15rem;
+  color: #111111; font-weight: 700; margin-bottom: 0.7rem;
+  padding-bottom: 0.35rem; border-bottom: 2px solid #b7e4c7;
 }
-
 [data-testid="stExpander"] {
-  background: rgba(255,252,245,0.80) !important;
-  border-radius: 10px !important;
-  border: 1px solid #b7e4c7 !important;
+  background: rgba(255,255,255,0.72) !important;
+  border-radius: 10px !important; border: 1px solid #b7e4c7 !important;
   margin-bottom: 0.45rem !important;
 }
-
 hr { border-color: #b7e4c7 !important; margin: 1.4rem 0 !important; }
-
 .block-container { position: relative !important; z-index: 3 !important; }
-
-/* ── Vine divider below title ── */
-.vine-divider {
-  text-align: center;
-  font-size: 1.4rem;
-  margin: 0.2rem 0 1rem 0;
-  letter-spacing: 0.4rem;
-  opacity: 0.6;
-  position: relative; z-index: 3;
-}
 </style>
 """, unsafe_allow_html=True)
 
 # ── Config ────────────────────────────────────────────────────────────────────
-MODEL_ID          = os.getenv("GROQ_MODEL", "meta-llama/llama-4-scout-17b-16e-instruct")
-DATA_DIR          = Path(os.getenv("PLANTSCAN_DATA_DIR", "data"))
-HISTORY_FILE      = DATA_DIR / "history.json"
+MODEL_ID = os.getenv("GROQ_MODEL", "meta-llama/llama-4-scout-17b-16e-instruct")
+DATA_DIR = Path(os.getenv("PLANTSCAN_DATA_DIR", "data"))
+HISTORY_FILE = DATA_DIR / "history.json"
 MAX_HISTORY_ITEMS = int(os.getenv("PLANTSCAN_MAX_HISTORY", "100"))
 
 
 def get_api_key() -> str:
     key = ""
     try:
-        key = st.secrets.get("GROQ_API_KEY", "")   # type: ignore[attr-defined]
+        key = st.secrets.get("GROQ_API_KEY", "")  # type: ignore[attr-defined]
     except Exception:
         key = ""
     if not key:
@@ -436,11 +316,11 @@ def add_to_history(plant_name: str, result: Dict[str, Any], image_b64: str) -> N
     history.insert(
         0,
         {
-            "id":         str(uuid.uuid4()),
-            "timestamp":  datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "id": str(uuid.uuid4()),
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M"),
             "plant_name": plant_name,
-            "result":     result,
-            "image":      image_b64,
+            "result": result,
+            "image": image_b64,
         },
     )
     save_history(history)
@@ -453,11 +333,15 @@ def image_to_b64(img: Image.Image) -> str:
 
 
 def extract_json_object(text: str) -> str:
+    """
+    Try hard to extract a single JSON object from model output.
+    Handles fenced code blocks and extra leading/trailing text.
+    """
     t = text.strip()
     t = re.sub(r"^```[a-zA-Z0-9_-]*\s*", "", t)
     t = re.sub(r"\s*```$", "", t)
     start = t.find("{")
-    end   = t.rfind("}")
+    end = t.rfind("}")
     if start != -1 and end != -1 and end > start:
         return t[start : end + 1]
     return t
@@ -469,29 +353,29 @@ def analyse_plant(client: Groq, b64: str) -> Dict[str, Any]:
         "Analyse the plant in this image and respond ONLY with valid JSON "
         "(no markdown, no extra text) using exactly this structure:\n"
         '{\n'
-        ' "plant_name": "Common name (Scientific name)",\n'
-        ' "confidence": "High / Medium / Low",\n'
-        ' "description": "2-3 sentence overview.",\n'
-        ' "health_status": "Healthy / Stressed / Diseased / Unknown",\n'
-        ' "health_tips": ["Tip 1","Tip 2","Tip 3"],\n'
-        ' "garden_suitability": "Excellent / Good / Fair / Poor",\n'
-        ' "garden_notes": "2-3 sentences about garden value.",\n'
-        ' "invasive_risk": "None / Low / Medium / High",\n'
-        ' "bee_impact": "Positive / Neutral / Negative",\n'
-        ' "bee_details": "2-3 sentences about pollinator interaction.",\n'
-        ' "bloom_season": "Spring / Summer / Autumn / Winter / Year-round / N/A",\n'
-        ' "fun_fact": "One interesting fact."\n'
+        '  "plant_name": "Common name (Scientific name)",\n'
+        '  "confidence": "High / Medium / Low",\n'
+        '  "description": "2-3 sentence overview.",\n'
+        '  "health_status": "Healthy / Stressed / Diseased / Unknown",\n'
+        '  "health_tips": ["Tip 1","Tip 2","Tip 3"],\n'
+        '  "garden_suitability": "Excellent / Good / Fair / Poor",\n'
+        '  "garden_notes": "2-3 sentences about garden value.",\n'
+        '  "invasive_risk": "None / Low / Medium / High",\n'
+        '  "bee_impact": "Positive / Neutral / Negative",\n'
+        '  "bee_details": "2-3 sentences about pollinator interaction.",\n'
+        '  "bloom_season": "Spring / Summer / Autumn / Winter / Year-round / N/A",\n'
+        '  "fun_fact": "One interesting fact."\n'
         '}'
     )
     resp = client.chat.completions.create(
         model=MODEL_ID,
-        messages=[{"role": "user", "content": [
-            {"type": "text",      "text": prompt},
-            {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{b64}"}},
+        messages=[{"role":"user","content":[
+            {"type":"text","text":prompt},
+            {"type":"image_url","image_url":{"url":f"data:image/jpeg;base64,{b64}"}},
         ]}],
         max_tokens=1024, temperature=0.3,
     )
-    raw       = (resp.choices[0].message.content or "").strip()
+    raw = (resp.choices[0].message.content or "").strip()
     extracted = extract_json_object(raw)
     try:
         parsed = json.loads(extracted)
@@ -501,15 +385,13 @@ def analyse_plant(client: Groq, b64: str) -> Dict[str, Any]:
         raise ValueError("Model JSON must be an object.")
     return parsed
 
-
-STATUS_COLOR = {"Healthy": "#4caf50", "Stressed": "#ff9800", "Diseased": "#f44336", "Unknown": "#9e9e9e"}
-IMPACT_COLOR = {"Positive": "#4caf50", "Neutral":  "#2196f3", "Negative": "#f44336"}
-SUIT_COLOR   = {"Excellent": "#4caf50", "Good": "#8bc34a",    "Fair": "#ff9800",     "Poor":  "#f44336"}
+STATUS_COLOR = {"Healthy":"#4caf50","Stressed":"#ff9800","Diseased":"#f44336","Unknown":"#9e9e9e"}
+IMPACT_COLOR = {"Positive":"#4caf50","Neutral":"#2196f3","Negative":"#f44336"}
+SUIT_COLOR   = {"Excellent":"#4caf50","Good":"#8bc34a","Fair":"#ff9800","Poor":"#f44336"}
 
 
 def badge(label: str, value: str, color: str) -> str:
     return f'<span class="badge" style="background:{color}">{label}: <strong>{value}</strong></span>'
-
 
 # ── Groq client init ──────────────────────────────────────────────────────────
 API_KEY = get_api_key()
@@ -519,23 +401,21 @@ if not API_KEY:
         "or set it as an environment variable."
     )
     st.stop()
-
 client = get_groq_client(API_KEY)
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
     render_site_logo()
     st.markdown('<div class="sidebar-title">📜 Scan History</div>', unsafe_allow_html=True)
-
-    sq      = st.text_input("🔍 Search history", placeholder="e.g. Rose, Oak…")
+    sq = st.text_input("🔍 Search history", placeholder="e.g. Rose, Oak…")
     history = load_history()
     sq_norm = (sq or "").strip().lower()
-
     if sq_norm:
         filtered = [
-            h for h in history
+            h
+            for h in history
             if sq_norm in str(h.get("plant_name", "")).lower()
-            or sq_norm in str(h.get("timestamp",  "")).lower()
+            or sq_norm in str(h.get("timestamp", "")).lower()
         ]
     else:
         filtered = history
@@ -544,7 +424,7 @@ with st.sidebar:
         st.info("No scans yet – upload a plant photo!")
     else:
         for e in filtered[:30]:
-            with st.expander(f"🌱 {e['plant_name']} · {e['timestamp']}"):
+            with st.expander(f"🌱 {e['plant_name']}  ·  {e['timestamp']}"):
                 if e.get("image"):
                     st.image(base64.b64decode(e["image"]), width=120)
                 r = e.get("result", {}) or {}
@@ -570,27 +450,17 @@ with st.sidebar:
         )
 
 # ── Main ──────────────────────────────────────────────────────────────────────
-
+render_falling_leaves()
 st.markdown('<h1 class="main-title">🌿 PlantScan AI</h1>', unsafe_allow_html=True)
-st.markdown('<div class="vine-divider">🌿 ❧ 🌿</div>', unsafe_allow_html=True)
-st.markdown(
-    '<p class="sub-title">Upload a photo of any plant and get an instant expert analysis</p>',
-    unsafe_allow_html=True,
-)
+st.markdown('<p class="sub-title">Upload a photo of any plant and get an instant expert analysis</p>', unsafe_allow_html=True)
 
 st.markdown('<div class="upload-wrapper">', unsafe_allow_html=True)
-uploaded = st.file_uploader(
-    "Drop or click to upload a plant photo",
-    type=["jpg", "jpeg", "png", "webp"],
-    label_visibility="visible",
-)
+uploaded = st.file_uploader("Drop or click to upload a plant photo", type=["jpg","jpeg","png","webp"], label_visibility="visible")
 st.markdown("</div>", unsafe_allow_html=True)
-fix_upload_label_color()
 
 if uploaded:
     img = Image.open(uploaded).convert("RGB")
-
-    col_img, col_btn = st.columns([1, 2])
+    col_img, col_btn = st.columns([1,2])
     with col_img:
         st.image(img, width=210, caption="Your plant")
     with col_btn:
@@ -606,72 +476,37 @@ if uploaded:
                 st.error(f"Analysis failed: {ex}")
                 st.stop()
 
-        add_to_history(result.get("plant_name", "Unknown"), result, b64)
-        render_falling_leaves()
+        add_to_history(result.get("plant_name","Unknown"), result, b64)
+        # Trigger celebration immediately after a successful analysis.
+        st.balloons()
 
         st.markdown("---")
-        st.markdown(
-            f'<h2 class="plant-name">🌿 {result.get("plant_name","Unknown plant")}</h2>',
-            unsafe_allow_html=True,
-        )
-        st.markdown(
-            f'<p class="confidence">Identification confidence: <strong>{result.get("confidence","?")}</strong></p>',
-            unsafe_allow_html=True,
-        )
+        st.markdown(f'<h2 class="plant-name">🌿 {result.get("plant_name","Unknown plant")}</h2>', unsafe_allow_html=True)
+        st.markdown(f'<p class="confidence">Identification confidence: <strong>{result.get("confidence","?")}</strong></p>', unsafe_allow_html=True)
         st.markdown(f'> {result.get("description","")}')
 
         c1, c2, c3 = st.columns(3, gap="medium")
 
         with c1:
-            health = result.get("health_status", "Unknown")
-            hcol   = STATUS_COLOR.get(health, "#9e9e9e")
-            st.markdown(
-                f'<div class="section-card">'
-                f'<div class="section-icon">🩺</div>'
-                f'<div class="section-header">Plant Health</div>'
-                f'<div class="status-pill" style="background:{hcol}">{health}</div>'
-                f'</div>',
-                unsafe_allow_html=True,
-            )
-            for t in result.get("health_tips", []):
+            health = result.get("health_status","Unknown")
+            hcol = STATUS_COLOR.get(health,"#9e9e9e")
+            st.markdown(f'<div class="section-card"><div class="section-icon">🩺</div><div class="section-header">Plant Health</div><div class="status-pill" style="background:{hcol}">{health}</div></div>', unsafe_allow_html=True)
+            for t in result.get("health_tips",[]):
                 st.markdown(f"- {t}")
 
         with c2:
-            suit = result.get("garden_suitability", "?")
-            scol = SUIT_COLOR.get(suit, "#9e9e9e")
-            st.markdown(
-                f'<div class="section-card">'
-                f'<div class="section-icon">🌻</div>'
-                f'<div class="section-header">Garden Profile</div>'
-                f'<div class="status-pill" style="background:{scol}">Suitability: {suit}</div>'
-                f'</div>',
-                unsafe_allow_html=True,
-            )
-            st.markdown(result.get("garden_notes", ""))
-            st.markdown(
-                f'<div class="mini-badge">⚠️ Invasive risk: {result.get("invasive_risk","?")}</div>',
-                unsafe_allow_html=True,
-            )
-            st.markdown(
-                f'<div class="mini-badge">🌸 Bloom: {result.get("bloom_season","?")}</div>',
-                unsafe_allow_html=True,
-            )
+            suit = result.get("garden_suitability","?")
+            scol = SUIT_COLOR.get(suit,"#9e9e9e")
+            st.markdown(f'<div class="section-card"><div class="section-icon">🌻</div><div class="section-header">Garden Profile</div><div class="status-pill" style="background:{scol}">Suitability: {suit}</div></div>', unsafe_allow_html=True)
+            st.markdown(result.get("garden_notes",""))
+            st.markdown(f'<div class="mini-badge">⚠️ Invasive risk: {result.get("invasive_risk","?")}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="mini-badge">🌸 Bloom: {result.get("bloom_season","?")}</div>', unsafe_allow_html=True)
 
         with c3:
-            bee  = result.get("bee_impact", "?")
-            bcol = IMPACT_COLOR.get(bee, "#9e9e9e")
-            st.markdown(
-                f'<div class="section-card">'
-                f'<div class="section-icon">🐝</div>'
-                f'<div class="section-header">Bee & Pollinator Impact</div>'
-                f'<div class="status-pill" style="background:{bcol}">{bee}</div>'
-                f'</div>',
-                unsafe_allow_html=True,
-            )
-            st.markdown(result.get("bee_details", ""))
+            bee = result.get("bee_impact","?")
+            bcol = IMPACT_COLOR.get(bee,"#9e9e9e")
+            st.markdown(f'<div class="section-card"><div class="section-icon">🐝</div><div class="section-header">Bee & Pollinator Impact</div><div class="status-pill" style="background:{bcol}">{bee}</div></div>', unsafe_allow_html=True)
+            st.markdown(result.get("bee_details",""))
 
         if result.get("fun_fact"):
-            st.markdown(
-                f'<div class="fun-fact">💡 <strong>Fun fact:</strong> {result["fun_fact"]}</div>',
-                unsafe_allow_html=True,
-            )
+            st.markdown(f'<div class="fun-fact">💡 <strong>Fun fact:</strong> {result["fun_fact"]}</div>', unsafe_allow_html=True)
