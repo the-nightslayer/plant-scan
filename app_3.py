@@ -10,7 +10,7 @@ import uuid
 from groq import Groq
 from PIL import Image
 import io
-import streamlit.components.v1 as components
+
 
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -52,71 +52,90 @@ def render_falling_leaves() -> None:
 
 def render_leaf_confetti() -> None:
     """
-    Renders a full-screen leaf confetti burst using st.components.v1.html,
-    which reliably executes JavaScript in Streamlit (unlike st.markdown scripts).
-    The iframe is sized to 0px so it takes no visual space.
+    Two-part confetti system that works around Streamlit's limitations:
+
+    Part 1 – inject a one-time postMessage LISTENER into the parent page via
+    st.markdown.  Streamlit strips <script> tags, but we can embed JS inside a
+    <svg><foreignObject><body onload=...> trick which is not stripped.
+
+    Part 2 – fire the confetti trigger from inside a components.html iframe via
+    window.parent.postMessage.  The iframe JS executes reliably; it just can't
+    touch the parent DOM directly.  Instead it messages the listener we planted
+    in Part 1, which then spawns the leaves on the real page.
     """
-    confetti_html = """
-<!DOCTYPE html>
-<html>
-<head>
-<style>
-  * { margin: 0; padding: 0; }
-  body { overflow: hidden; background: transparent; }
-  .leaf {
-    position: fixed;
-    top: -60px;
-    font-size: 1.8rem;
-    pointer-events: none;
-    animation: leafDrop linear forwards;
-    z-index: 99999;
-  }
-  @keyframes leafDrop {
-    0%   { opacity: 1;   transform: translateY(0px)    translateX(0px)   rotate(0deg);   }
-    80%  { opacity: 1; }
-    100% { opacity: 0;   transform: translateY(105vh)  translateX(var(--sway)) rotate(720deg); }
-  }
-</style>
-</head>
-<body>
-<script>
-  (function () {
-    const emojis = ['🍃','🌿','🍂','🌱','🍀'];
-    const count  = 90;
+    import streamlit.components.v1 as components
 
-    for (let i = 0; i < count; i++) {
-      const el       = document.createElement('div');
-      el.className   = 'leaf';
-      el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    # ── Part 1: plant the listener once in the parent document ──────────────
+    # We use an <img onerror> trick: a broken image whose onerror handler runs
+    # our JS in the parent page context.  Streamlit does NOT strip event attrs
+    # on non-<script> tags.
+    listener_id = "leafConfettiListener"
+    st.markdown(
+        f"""
+        <img src="x" id="{listener_id}_trigger"
+          onerror="
+            if (!window._leafListenerActive) {{
+              window._leafListenerActive = true;
+              var style = document.createElement('style');
+              style.textContent = `
+                @keyframes _lfDrop {{
+                  0%   {{ opacity:1;  transform:translateY(-80px) rotate(0deg); }}
+                  85%  {{ opacity:1; }}
+                  100% {{ opacity:0;  transform:translateY(110vh) translateX(var(--sw,0px)) rotate(720deg); }}
+                }}
+                ._lf {{
+                  position:fixed; top:0; pointer-events:none;
+                  z-index:2147483647; animation:_lfDrop linear forwards;
+                  user-select:none; font-family: serif;
+                }}
+              `;
+              document.head.appendChild(style);
+              window.addEventListener('message', function(e) {{
+                if (e.data && e.data.type === 'LEAF_CONFETTI') {{
+                  var em = ['🍃','🌿','🍂','🌱','🍀','🌾'];
+                  var n = 100, maxLife = 0;
+                  var frag = document.createDocumentFragment();
+                  for (var i = 0; i < n; i++) {{
+                    var el = document.createElement('span');
+                    el.className = '_lf';
+                    el.textContent = em[Math.floor(Math.random() * em.length)];
+                    var left = (Math.random() * 100).toFixed(1);
+                    var sz   = (1.1 + Math.random() * 2.0).toFixed(2);
+                    var dur  = (3.5 + Math.random() * 4.5).toFixed(2);
+                    var del  = (Math.random() * 2.5).toFixed(2);
+                    var sw   = (Math.random() * 240 - 120).toFixed(0) + 'px';
+                    var life = parseFloat(dur) + parseFloat(del);
+                    if (life > maxLife) maxLife = life;
+                    el.style.cssText =
+                      'left:' + left + 'vw;font-size:' + sz + 'rem;' +
+                      '--sw:' + sw + ';animation-duration:' + dur +
+                      's;animation-delay:' + del + 's;';
+                    frag.appendChild(el);
+                  }}
+                  document.body.appendChild(frag);
+                  setTimeout(function() {{
+                    document.querySelectorAll('._lf').forEach(function(x){{x.remove();}});
+                  }}, (maxLife + 1) * 1000);
+                }}
+              }});
+            }}
+            this.style.display='none';
+          "
+          style="display:none" alt="">
+        """,
+        unsafe_allow_html=True,
+    )
 
-      const left     = Math.random() * 100;
-      const size     = 1.2 + Math.random() * 1.8;
-      const duration = 3.5 + Math.random() * 4;
-      const delay    = Math.random() * 2.5;
-      const sway     = (Math.random() * 180 - 90).toFixed(0) + 'px';
-
-      el.style.cssText = `
-        left: ${left}vw;
-        font-size: ${size}rem;
-        --sway: ${sway};
-        animation-name: leafDrop;
-        animation-duration: ${duration}s;
-        animation-delay: ${delay}s;
-      `;
-      document.body.appendChild(el);
-    }
-
-    // Clean up after all animations finish
-    setTimeout(() => document.body.innerHTML = '', 9000);
-  })();
-</script>
-</body>
-</html>
-"""
-    # height=0 hides the iframe visually; the fixed-position leaves escape the iframe
-    # in most browsers when allow="same-origin" is set via srcdoc rendering.
-    # We use a generous height so the confetti iframe JS actually runs.
-    components.html(confetti_html, height=0, scrolling=False)
+    # ── Part 2: fire the trigger from inside a components.html iframe ────────
+    components.html(
+        """
+        <script>
+          window.parent.postMessage({ type: 'LEAF_CONFETTI' }, '*');
+        </script>
+        """,
+        height=0,
+        scrolling=False,
+    )
 
 
 # ── CSS ───────────────────────────────────────────────────────────────────────
