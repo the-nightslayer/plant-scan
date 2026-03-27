@@ -127,12 +127,15 @@ html, body {{ width:100%; height:100%; overflow:hidden; background:transparent; 
     var left  = (Math.random() * 100).toFixed(2);
     var size  = (1.2 + Math.random() * 2.0).toFixed(2);
     var dur   = (3.5 + Math.random() * 5.0).toFixed(2);
-    var delay = (Math.random() * 3.0).toFixed(2);
+    // Stagger start by spreading leaves across Y so they appear already mid-fall
+    // instead of all queuing at the top. We use a negative delay equivalent:
+    // start the animation partway through by setting a negative delay.
+    var negDelay = (-(Math.random() * parseFloat(dur) * 0.85)).toFixed(2);
     var sway  = ((Math.random() * 260) - 130).toFixed(0) + 'px';
-    var end   = parseFloat(dur) + parseFloat(delay);
+    var end   = parseFloat(dur);  // negative delay means it's already running
     if (end > maxEnd) maxEnd = end;
     el.style.cssText = 'left:'+left+'vw;font-size:'+size+'rem;--sway:'+sway
-      +';animation-duration:'+dur+'s;animation-delay:'+delay+'s';
+      +';animation-duration:'+dur+'s;animation-delay:'+negDelay+'s';
     frag.appendChild(el);
   }}
   document.body.appendChild(frag);
@@ -144,7 +147,7 @@ html, body {{ width:100%; height:100%; overflow:hidden; background:transparent; 
       if (f) {{ f.style.cssText = 'height:0px!important;width:0px!important;border:none'; }}
     }} catch(e) {{}}
     document.body.innerHTML = '';
-  }}, (maxEnd + 1.5) * 1000);
+  }}, (maxEnd + 2.0) * 1000);
 }})();
 </script>
 </body>
