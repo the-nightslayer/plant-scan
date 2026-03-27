@@ -323,6 +323,53 @@ html, body, [class*="css"] {
 }
 .section-card * { color: #111111 !important; }
 
+/* ── Result section: force all text dark ── */
+.result-col p,
+.result-col span,
+.result-col div,
+.result-col li,
+.result-col label,
+.result-col [data-testid="stMarkdownContainer"],
+.result-col [data-testid="stMarkdownContainer"] *,
+.result-col [data-testid="stText"],
+.result-col [data-testid="stCaptionContainer"],
+.result-col [data-testid="stCaptionContainer"] * {
+  color: #1b4332 !important;
+  -webkit-text-fill-color: #1b4332 !important;
+}
+
+/* ── ALL text in the main page columns (result cards + bullets + captions) ── */
+.stColumn p,
+.stColumn span,
+.stColumn div,
+.stColumn small,
+.stColumn label,
+.stColumn [data-testid="stMarkdownContainer"] *,
+.stColumn [data-testid="stCaptionContainer"] *,
+.stColumn [data-testid="stText"] * {
+  color: #111111 !important;
+  -webkit-text-fill-color: #111111 !important;
+}
+
+/* ── Description paragraph directly after plant name ── */
+[data-testid="stVerticalBlock"] > div > [data-testid="stVerticalBlock"] p,
+[data-testid="stVerticalBlock"] > div > [data-testid="stVerticalBlock"] span,
+[data-testid="stMarkdownContainer"] p,
+[data-testid="stMarkdownContainer"] span,
+[data-testid="stMarkdownContainer"] li,
+[data-testid="stCaptionContainer"] p,
+[data-testid="stCaptionContainer"] span {
+  color: #111111 !important;
+  -webkit-text-fill-color: #111111 !important;
+}
+
+/* Main description text and bullet tips */
+[data-testid="stVerticalBlock"] > [data-testid="stVerticalBlock"] p,
+[data-testid="stVerticalBlock"] > [data-testid="stVerticalBlock"] span {
+  color: #111111 !important;
+  -webkit-text-fill-color: #111111 !important;
+}
+
 .section-icon   { font-size: 2rem;  margin-bottom: 0.25rem; }
 .section-header {
   font-family: 'Playfair Display', serif;
@@ -354,18 +401,51 @@ html, body, [class*="css"] {
   border-radius: 12px;
   padding: 0.85rem 1.2rem;
   margin-top: 1.4rem;
-  font-size: 0.95rem; color: #111111;
+  font-size: 0.95rem; color: #111111 !important;
   box-shadow: 0 3px 12px rgba(27,67,50,0.10);
   position: relative; z-index: 3;
 }
+.fun-fact * { color: #111111 !important; -webkit-text-fill-color: #111111 !important; }
 
 .plant-name {
   font-family: 'Playfair Display', serif !important;
   font-size: 1.85rem !important;
   color: #1b4332 !important;
+  -webkit-text-fill-color: #1b4332 !important;
   margin-bottom: 0 !important;
 }
 .confidence { color: #2d6a4f !important; font-size: 0.88rem; margin-bottom: 0.7rem; }
+
+/* ── Main result area: force dark text on all Streamlit elements ──
+   Scoped to the main block container so sidebar & upload zone are untouched. */
+section[data-testid="stMain"] p,
+section[data-testid="stMain"] span,
+section[data-testid="stMain"] div,
+section[data-testid="stMain"] label,
+section[data-testid="stMain"] [data-testid="stText"],
+section[data-testid="stMain"] [data-testid="stMarkdownContainer"],
+section[data-testid="stMain"] [data-testid="stMarkdownContainer"] *,
+section[data-testid="stMain"] [data-testid="stCaptionContainer"],
+section[data-testid="stMain"] [data-testid="stCaptionContainer"] * {
+  color: #111111 !important;
+  -webkit-text-fill-color: #111111 !important;
+}
+
+/* Keep upload zone text white inside the main area */
+section[data-testid="stMain"] .upload-wrapper *,
+section[data-testid="stMain"] .upload-wrapper [data-testid="stFileUploader"] *,
+section[data-testid="stMain"] .upload-wrapper [data-testid="stFileUploader"] p,
+section[data-testid="stMain"] .upload-wrapper [data-testid="stFileUploader"] span,
+section[data-testid="stMain"] .upload-wrapper [data-testid="stFileUploader"] div {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Keep status pill text white */
+section[data-testid="stMain"] .status-pill {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
 
 .badge {
   display: inline-block; padding: 0.18rem 0.7rem;
