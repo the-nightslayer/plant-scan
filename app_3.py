@@ -66,19 +66,9 @@ st.markdown("""
   --shadow:      0 8px 32px rgba(27,67,50,0.18);
 }
 
-/* Global Text color fix for sections and history */
-html, body, [class*="css"], .stMarkdown, p, span, label, .stExpander, .stSidebar {
+html, body, [class*="css"] {
   font-family: 'DM Sans', sans-serif !important;
-  color: #000000 !important;
-}
-
-/* Specific styling for details text to improve visibility */
-.readable-box {
-    background-color: rgba(0, 0, 0, 0.08);
-    padding: 15px;
-    border-radius: 12px;
-    margin-bottom: 10px;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #111111 !important;
 }
 
 .stApp {
@@ -175,13 +165,14 @@ html, body, [class*="css"], .stMarkdown, p, span, label, .stExpander, .stSidebar
   transform: scale(1.01);
 }
 
-/* Labels inside upload zone should stay white for contrast */
 .upload-wrapper [data-testid="stFileUploader"] *,
 .upload-wrapper [data-testid="stFileUploader"] p,
 .upload-wrapper [data-testid="stFileUploader"] span,
 .upload-wrapper [data-testid="stFileUploader"] small,
 .upload-wrapper [data-testid="stFileUploader"] div,
-.upload-wrapper [data-testid="stFileUploader"] label {
+.upload-wrapper [data-testid="stFileUploader"] label,
+.upload-wrapper [data-testid="stFileUploader"] [data-testid="stMarkdownContainer"],
+.upload-wrapper [data-testid="stFileUploader"] [data-testid="stMarkdownContainer"] * {
   color: #ffffff !important;
   -webkit-text-fill-color: #ffffff !important;
 }
@@ -213,11 +204,11 @@ html, body, [class*="css"], .stMarkdown, p, span, label, .stExpander, .stSidebar
   border: 1px solid rgba(178,220,194,0.65);
   text-align: center;
   margin-bottom: 1rem;
-  color: #000000 !important;
+  color: #111111 !important;
   position: relative; z-index: 1;
   background-image: radial-gradient(ellipse at 90% 10%, rgba(82,183,136,0.08) 0%, transparent 60%);
 }
-.section-card * { color: #000000 !important; }
+.section-card * { color: #111111 !important; }
 
 .section-icon   { font-size: 2rem;  margin-bottom: 0.25rem; }
 .section-header {
@@ -240,7 +231,7 @@ html, body, [class*="css"], .stMarkdown, p, span, label, .stExpander, .stSidebar
   border: 1px solid #b7e4c7;
   border-radius: 8px;
   padding: 0.18rem 0.65rem;
-  font-size: 0.82rem; color: #000000;
+  font-size: 0.82rem; color: #111111;
   margin: 0.22rem 0.08rem;
 }
 
@@ -250,7 +241,7 @@ html, body, [class*="css"], .stMarkdown, p, span, label, .stExpander, .stSidebar
   border-radius: 12px;
   padding: 0.85rem 1.2rem;
   margin-top: 1.4rem;
-  font-size: 0.95rem; color: #000000;
+  font-size: 0.95rem; color: #111111;
   box-shadow: 0 3px 12px rgba(27,67,50,0.10);
   position: relative; z-index: 3;
 }
@@ -269,18 +260,9 @@ html, body, [class*="css"], .stMarkdown, p, span, label, .stExpander, .stSidebar
   font-size: 0.8rem; margin-bottom: 0.25rem;
 }
 
-/* Sidebar History tab background made darker for readability */
 section[data-testid="stSidebar"] {
-  background: linear-gradient(180deg, #cce0cc 0%, #b8d4b8 100%) !important;
+  background: linear-gradient(180deg, #f0f7ee 0%, #e8f5e9 100%) !important;
   border-right: 2px solid rgba(45,106,79,0.18) !important;
-}
-section[data-testid="stSidebar"] * {
-  color: #000000 !important;
-}
-section[data-testid="stSidebar"] .stExpander {
-  background-color: rgba(255, 255, 255, 0.4) !important;
-  border-radius: 10px !important;
-  border: 1px solid rgba(45, 106, 79, 0.2) !important;
 }
 
 .sidebar-title {
@@ -460,13 +442,12 @@ if uploaded:
             result = analyse_plant(client, b64)
             add_to_history(result.get("plant_name", "Unknown"), result, b64)
 
-        # Enhanced Leaf Confetti Burst Effect
+        # Enhanced Leaf Confetti Effect
         st.markdown("""
         <script>
         (function(){
           const emojis = ['🍃','🌿','🍂','🌱'];
           const container = document.createElement('div');
-          container.id = 'confetti-container';
           container.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10000;overflow:hidden;';
           document.body.appendChild(container);
           
@@ -475,7 +456,7 @@ if uploaded:
             const left = Math.random() * 100;
             const size = 1 + Math.random() * 2;
             const duration = 3 + Math.random() * 4;
-            const delay = Math.random() * 1;
+            const delay = Math.random() * 2;
             
             leaf.textContent = emojis[Math.floor(Math.random() * emojis.length)];
             leaf.style.cssText = `
@@ -485,16 +466,16 @@ if uploaded:
               font-size: ${size}rem;
               opacity: 0;
               transform: rotate(${Math.random() * 360}deg);
-              animation: burstFall ${duration}s linear ${delay}s forwards;
+              animation: fall ${duration}s linear ${delay}s forwards;
             `;
             container.appendChild(leaf);
           }
           
           const style = document.createElement('style');
           style.textContent = `
-            @keyframes burstFall {
+            @keyframes fall {
               0% { top: -50px; opacity: 1; transform: translateX(0) rotate(0deg); }
-              100% { top: 110vh; opacity: 0; transform: translateX(${Math.random() * 200 - 100}px) rotate(720deg); }
+              100% { top: 110vh; opacity: 0; transform: translateX(${Math.random() * 100 - 50}px) rotate(720deg); }
             }
           `;
           document.head.appendChild(style);
@@ -505,63 +486,21 @@ if uploaded:
 
         st.markdown("---")
         st.markdown(f'<h2 class="plant-name">🌿 {result.get("plant_name")}</h2>', unsafe_allow_html=True)
-        
-        # Wrapped description in readable box
-        st.markdown(f'<div class="readable-box">{result.get("description")}</div>', unsafe_allow_html=True)
+        st.write(result.get("description"))
 
         res_c1, res_c2, res_c3 = st.columns(3)
         with res_c1:
-            h = result.get("health_status", "Unknown")
-            st.markdown(
-                f'<div class="section-card">'
-                f'<div class="section-icon">🩺</div>'
-                f'<div class="section-header">Health Status</div>'
-                f'<div class="status-pill" style="background:{STATUS_COLOR.get(h, "#9e9e9e")}">{h}</div>'
-                f'</div>',
-                unsafe_allow_html=True,
-            )
-            # Wrapped tips in readable box
-            tips_html = "".join([f"<li>{tip}</li>" for tip in result.get("health_tips", [])])
-            st.markdown(f'<div class="readable-box"><ul>{tips_html}</ul></div>', unsafe_allow_html=True)
-
+            h = result.get("health_status")
+            st.markdown(f'<div class="section-card">🩺<br><b>Health</b><br><div class="status-pill" style="background:{STATUS_COLOR.get(h, "#9e9e9e")}">{h}</div></div>', unsafe_allow_html=True)
+            for tip in result.get("health_tips", []): st.write(f"• {tip}")
         with res_c2:
-            suit = result.get("garden_suitability", "Unknown")
-            scol = SUIT_COLOR.get(suit, "#9e9e9e")
-            st.markdown(
-                f'<div class="section-card">'
-                f'<div class="section-icon">🌻</div>'
-                f'<div class="section-header">Garden Profile</div>'
-                f'<div class="status-pill" style="background:{scol}">Suitability: {suit}</div>'
-                f'</div>',
-                unsafe_allow_html=True,
-            )
-            # Wrapped garden notes in readable box
-            st.markdown(f'<div class="readable-box">{result.get("garden_notes", "")}</div>', unsafe_allow_html=True)
-            st.markdown(
-                f'<div class="mini-badge">⚠️ Invasive risk: {result.get("invasive_risk","?")}</div>',
-                unsafe_allow_html=True,
-            )
-            st.markdown(
-                f'<div class="mini-badge">🌸 Bloom: {result.get("bloom_season","?")}</div>',
-                unsafe_allow_html=True,
-            )
-
+            s = result.get("garden_suitability")
+            st.markdown(f'<div class="section-card">🌻<br><b>Garden</b><br><div class="status-pill" style="background:{SUIT_COLOR.get(s, "#9e9e9e")}">{s}</div></div>', unsafe_allow_html=True)
+            st.caption(result.get("garden_notes"))
         with res_c3:
-            bee  = result.get("bee_impact", "?")
-            bcol = IMPACT_COLOR.get(bee, "#9e9e9e")
-            st.markdown(
-                f'<div class="section-card">'
-                f'<div class="section-icon">🐝</div>'
-                f'<div class="section-header">Bee & Pollinator Impact</div>'
-                f'<div class="status-pill" style="background:{bcol}">{bee}</div>'
-                f'</div>',
-                unsafe_allow_html=True,
-            )
-            # Wrapped bee details in readable box
-            st.markdown(f'<div class="readable-box">{result.get("bee_details", "")}</div>', unsafe_allow_html=True)
+            b = result.get("bee_impact")
+            st.markdown(f'<div class="section-card">🐝<br><b>Pollinators</b><br><div class="status-pill" style="background:{IMPACT_COLOR.get(b, "#9e9e9e")}">{b}</div></div>', unsafe_allow_html=True)
+            st.caption(result.get("bee_details"))
 
         if result.get("fun_fact"):
-            st.markdown(
-                f'<div class="fun-fact">💡 <strong>Fun fact:</strong> {result["fun_fact"]}</div>',
-                unsafe_allow_html=True,
-            )
+            st.markdown(f'<div class="fun-fact">💡 <b>Did you know?</b> {result["fun_fact"]}</div>', unsafe_allow_html=True)
