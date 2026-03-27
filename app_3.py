@@ -241,16 +241,18 @@ html, body, [class*="css"] {
 .main-title {
   font-family: 'Playfair Display', serif !important;
   font-size: 2.8rem !important;
-  color: #1b4332 !important;
+  color: #e85d04 !important;
+  -webkit-text-fill-color: #e85d04 !important;
   text-align: center;
   margin-bottom: 0 !important;
-  text-shadow: 0 2px 8px rgba(27,67,50,0.12);
+  text-shadow: 0 2px 8px rgba(232,93,4,0.15);
   position: relative; z-index: 3;
 }
 .sub-title {
   text-align: center;
   font-size: 1rem;
-  color: #2d6a4f !important;
+  color: #e85d04 !important;
+  -webkit-text-fill-color: #e85d04 !important;
   margin-bottom: 1.8rem;
   position: relative; z-index: 3;
   font-style: italic;
@@ -302,16 +304,16 @@ html, body, [class*="css"] {
   padding: 1.2rem 1rem 0.8rem;
   box-shadow: var(--shadow);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(178,220,194,0.65);
+  border: 1px solid rgba(232,93,4,0.25);
   text-align: center;
   margin-bottom: 1rem;
-  color: #111111 !important;
+  color: #e85d04 !important;
   position: relative; z-index: 1;
-  background-image: radial-gradient(ellipse at 90% 10%, rgba(82,183,136,0.08) 0%, transparent 60%);
+  background-image: radial-gradient(ellipse at 90% 10%, rgba(232,93,4,0.06) 0%, transparent 60%);
 }
-.section-card * { color: #111111 !important; }
+.section-card * { color: #e85d04 !important; -webkit-text-fill-color: #e85d04 !important; }
 
-/* ── Result section: force all text dark ── */
+/* ── Result section: force all text orange ── */
 .result-col p,
 .result-col span,
 .result-col div,
@@ -322,11 +324,11 @@ html, body, [class*="css"] {
 .result-col [data-testid="stText"],
 .result-col [data-testid="stCaptionContainer"],
 .result-col [data-testid="stCaptionContainer"] * {
-  color: #111111 !important;
-  -webkit-text-fill-color: #111111 !important;
+  color: #e85d04 !important;
+  -webkit-text-fill-color: #e85d04 !important;
 }
 
-/* ── ALL columns, markdown, captions → dark text ── */
+/* ── ALL columns, markdown, captions → orange text ── */
 .stColumn p,
 .stColumn span,
 .stColumn div,
@@ -335,8 +337,8 @@ html, body, [class*="css"] {
 .stColumn [data-testid="stMarkdownContainer"] *,
 .stColumn [data-testid="stCaptionContainer"] *,
 .stColumn [data-testid="stText"] * {
-  color: #111111 !important;
-  -webkit-text-fill-color: #111111 !important;
+  color: #e85d04 !important;
+  -webkit-text-fill-color: #e85d04 !important;
 }
 
 [data-testid="stMarkdownContainer"] p,
@@ -346,8 +348,8 @@ html, body, [class*="css"] {
 [data-testid="stCaptionContainer"] span,
 [data-testid="stVerticalBlock"] p,
 [data-testid="stVerticalBlock"] span {
-  color: #111111 !important;
-  -webkit-text-fill-color: #111111 !important;
+  color: #e85d04 !important;
+  -webkit-text-fill-color: #e85d04 !important;
 }
 
 /* ── UPLOAD ZONE ALWAYS WHITE — placed last so it wins ── */
@@ -394,25 +396,25 @@ html body .upload-wrapper [data-testid="stMarkdownContainer"] * {
 }
 
 .fun-fact {
-  background: linear-gradient(120deg, #d8f3dc, #b7e4c7);
-  border-left: 5px solid #2d6a4f;
+  background: linear-gradient(120deg, #fff3e0, #ffe0b2);
+  border-left: 5px solid #e85d04;
   border-radius: 12px;
   padding: 0.85rem 1.2rem;
   margin-top: 1.4rem;
-  font-size: 0.95rem; color: #111111 !important;
-  box-shadow: 0 3px 12px rgba(27,67,50,0.10);
+  font-size: 0.95rem; color: #e85d04 !important;
+  box-shadow: 0 3px 12px rgba(232,93,4,0.12);
   position: relative; z-index: 3;
 }
-.fun-fact * { color: #111111 !important; -webkit-text-fill-color: #111111 !important; }
+.fun-fact * { color: #e85d04 !important; -webkit-text-fill-color: #e85d04 !important; }
 
 .plant-name {
   font-family: 'Playfair Display', serif !important;
   font-size: 1.85rem !important;
-  color: #1b4332 !important;
-  -webkit-text-fill-color: #1b4332 !important;
+  color: #e85d04 !important;
+  -webkit-text-fill-color: #e85d04 !important;
   margin-bottom: 0 !important;
 }
-.confidence { color: #2d6a4f !important; font-size: 0.88rem; margin-bottom: 0.7rem; }
+.confidence { color: #e85d04 !important; font-size: 0.88rem; margin-bottom: 0.7rem; }
 
 /* ── Main result area: force dark text on all Streamlit elements ──
    Scoped to the main block container so sidebar & upload zone are untouched. */
@@ -425,8 +427,8 @@ section[data-testid="stMain"] [data-testid="stMarkdownContainer"],
 section[data-testid="stMain"] [data-testid="stMarkdownContainer"] *,
 section[data-testid="stMain"] [data-testid="stCaptionContainer"],
 section[data-testid="stMain"] [data-testid="stCaptionContainer"] * {
-  color: #111111 !important;
-  -webkit-text-fill-color: #111111 !important;
+  color: #e85d04 !important;
+  -webkit-text-fill-color: #e85d04 !important;
 }
 
 /* Keep upload zone text white inside the main area */
@@ -496,11 +498,11 @@ section[data-testid="stSidebar"] .stAlert * {
 .sidebar-title {
   font-family: 'Playfair Display', serif;
   font-size: 1.15rem;
-  color: #1b4332 !important;
-  -webkit-text-fill-color: #1b4332 !important;
+  color: #e85d04 !important;
+  -webkit-text-fill-color: #e85d04 !important;
   font-weight: 700; margin-bottom: 0.7rem;
   padding-bottom: 0.35rem;
-  border-bottom: 2px solid #52b788;
+  border-bottom: 2px solid #e85d04;
 }
 
 .vine-divider {
