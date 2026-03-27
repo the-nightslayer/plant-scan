@@ -278,34 +278,9 @@ html, body, [class*="css"] {
   transform: scale(1.01);
 }
 
-.upload-wrapper [data-testid="stFileUploader"] *,
-.upload-wrapper [data-testid="stFileUploader"] p,
-.upload-wrapper [data-testid="stFileUploader"] span,
-.upload-wrapper [data-testid="stFileUploader"] small,
-.upload-wrapper [data-testid="stFileUploader"] div,
-.upload-wrapper [data-testid="stFileUploader"] label,
-.upload-wrapper [data-testid="stFileUploader"] [data-testid="stMarkdownContainer"],
-.upload-wrapper [data-testid="stFileUploader"] [data-testid="stMarkdownContainer"] * {
-  color: #ffffff !important;
-  -webkit-text-fill-color: #ffffff !important;
-}
-
 .upload-wrapper [data-testid="stFileUploader"] svg {
   fill: #b7e4c7 !important;
   stroke: #b7e4c7 !important;
-}
-
-/* ── Override: keep upload zone text white ── */
-.upload-wrapper *,
-.upload-wrapper p,
-.upload-wrapper span,
-.upload-wrapper small,
-.upload-wrapper div,
-.upload-wrapper label,
-.upload-wrapper [data-testid="stMarkdownContainer"],
-.upload-wrapper [data-testid="stMarkdownContainer"] * {
-  color: #ffffff !important;
-  -webkit-text-fill-color: #ffffff !important;
 }
 
 .stButton > button[kind="primary"] {
@@ -347,11 +322,11 @@ html, body, [class*="css"] {
 .result-col [data-testid="stText"],
 .result-col [data-testid="stCaptionContainer"],
 .result-col [data-testid="stCaptionContainer"] * {
-  color: #1b4332 !important;
-  -webkit-text-fill-color: #1b4332 !important;
+  color: #111111 !important;
+  -webkit-text-fill-color: #111111 !important;
 }
 
-/* ── ALL text in the main page columns (result cards + bullets + captions) ── */
+/* ── ALL columns, markdown, captions → dark text ── */
 .stColumn p,
 .stColumn span,
 .stColumn div,
@@ -364,23 +339,33 @@ html, body, [class*="css"] {
   -webkit-text-fill-color: #111111 !important;
 }
 
-/* ── Description paragraph directly after plant name ── */
-[data-testid="stVerticalBlock"] > div > [data-testid="stVerticalBlock"] p,
-[data-testid="stVerticalBlock"] > div > [data-testid="stVerticalBlock"] span,
 [data-testid="stMarkdownContainer"] p,
 [data-testid="stMarkdownContainer"] span,
 [data-testid="stMarkdownContainer"] li,
 [data-testid="stCaptionContainer"] p,
-[data-testid="stCaptionContainer"] span {
+[data-testid="stCaptionContainer"] span,
+[data-testid="stVerticalBlock"] p,
+[data-testid="stVerticalBlock"] span {
   color: #111111 !important;
   -webkit-text-fill-color: #111111 !important;
 }
 
-/* Main description text and bullet tips */
-[data-testid="stVerticalBlock"] > [data-testid="stVerticalBlock"] p,
-[data-testid="stVerticalBlock"] > [data-testid="stVerticalBlock"] span {
-  color: #111111 !important;
-  -webkit-text-fill-color: #111111 !important;
+/* ── UPLOAD ZONE ALWAYS WHITE — placed last so it wins ── */
+html body .upload-wrapper,
+html body .upload-wrapper *,
+html body .upload-wrapper p,
+html body .upload-wrapper span,
+html body .upload-wrapper small,
+html body .upload-wrapper div,
+html body .upload-wrapper label,
+html body .upload-wrapper [data-testid="stFileUploader"],
+html body .upload-wrapper [data-testid="stFileUploader"] *,
+html body .upload-wrapper [data-testid="stFileUploaderDropzone"],
+html body .upload-wrapper [data-testid="stFileUploaderDropzone"] *,
+html body .upload-wrapper [data-testid="stMarkdownContainer"],
+html body .upload-wrapper [data-testid="stMarkdownContainer"] * {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
 }
 
 .section-icon   { font-size: 2rem;  margin-bottom: 0.25rem; }
@@ -643,6 +628,10 @@ if not API_KEY:
     st.stop()
 client = get_groq_client(API_KEY)
 
+# ── Session state ─────────────────────────────────────────────────────────────
+if "viewed_result" not in st.session_state:
+    st.session_state.viewed_result = None  # holds a history entry to display
+
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
     render_site_logo()
@@ -656,6 +645,53 @@ with st.sidebar:
                 if e.get("image"):
                     st.image(base64.b64decode(e["image"]), width=120)
                 st.caption(e["timestamp"])
+                if st.button("📋 View results", key=f"view_{e['id']}"):
+                    st.session_state.viewed_result = e
+                    st.rerun()
+
+# ── Helper: render result card ────────────────────────────────────────────────
+def render_result(result: Dict[str, Any], image_b64: str | None = None) -> None:
+    if image_b64:
+        c1, c2, c3 = st.columns([1, 1, 1])
+        with c2:
+            st.image(base64.b64decode(image_b64), use_container_width=True)
+
+    st.markdown("---")
+    st.markdown(f'<h2 class="plant-name">🌿 {result.get("plant_name")}</h2>', unsafe_allow_html=True)
+    st.write(result.get("description"))
+
+    res_c1, res_c2, res_c3 = st.columns(3)
+    with res_c1:
+        h = result.get("health_status")
+        st.markdown(
+            f'<div class="section-card">🩺<br><b>Health</b><br>'
+            f'<div class="status-pill" style="background:{STATUS_COLOR.get(h, "#9e9e9e")}">{h}</div></div>',
+            unsafe_allow_html=True,
+        )
+        for tip in result.get("health_tips", []):
+            st.write(f"• {tip}")
+    with res_c2:
+        s = result.get("garden_suitability")
+        st.markdown(
+            f'<div class="section-card">🌻<br><b>Garden</b><br>'
+            f'<div class="status-pill" style="background:{SUIT_COLOR.get(s, "#9e9e9e")}">{s}</div></div>',
+            unsafe_allow_html=True,
+        )
+        st.caption(result.get("garden_notes"))
+    with res_c3:
+        b = result.get("bee_impact")
+        st.markdown(
+            f'<div class="section-card">🐝<br><b>Pollinators</b><br>'
+            f'<div class="status-pill" style="background:{IMPACT_COLOR.get(b, "#9e9e9e")}">{b}</div></div>',
+            unsafe_allow_html=True,
+        )
+        st.caption(result.get("bee_details"))
+
+    if result.get("fun_fact"):
+        st.markdown(
+            f'<div class="fun-fact">💡 <b>Did you know?</b> {result["fun_fact"]}</div>',
+            unsafe_allow_html=True,
+        )
 
 # ── Main UI ───────────────────────────────────────────────────────────────────
 render_falling_leaves()
@@ -663,66 +699,43 @@ st.markdown('<h1 class="main-title">🌿 PlantScan AI</h1>', unsafe_allow_html=T
 st.markdown('<div class="vine-divider">🌿 ❧ 🌿</div>', unsafe_allow_html=True)
 st.markdown('<p class="sub-title">Expert botanical analysis from a simple photo</p>', unsafe_allow_html=True)
 
-# Centered cozy upload area
-col_left, col_mid, col_right = st.columns([1, 2, 1])
-with col_mid:
-    st.markdown('<div class="upload-wrapper">', unsafe_allow_html=True)
-    uploaded = st.file_uploader(
-        "Upload a plant photo",
-        type=["jpg", "jpeg", "png", "webp"],
-        label_visibility="collapsed",
+# ── If a history item was clicked, show it instead of the upload flow ─────────
+if st.session_state.viewed_result is not None:
+    entry = st.session_state.viewed_result
+    st.markdown(
+        f'<p style="text-align:center;color:#2d6a4f;font-style:italic;">'
+        f'📖 Viewing saved scan from {entry["timestamp"]}</p>',
+        unsafe_allow_html=True,
     )
-    st.markdown("</div>", unsafe_allow_html=True)
+    if st.button("⬅️ Back to scanner", type="primary"):
+        st.session_state.viewed_result = None
+        st.rerun()
+    render_result(entry["result"], entry.get("image"))
 
-if uploaded:
-    img = Image.open(uploaded).convert("RGB")
-    c1, c2, c3 = st.columns([1, 1, 1])
-    with c2:
-        st.image(img, use_container_width=True)
-        scan_btn = st.button("🔬 Analyse Plant", use_container_width=True, type="primary")
+else:
+    # Centered cozy upload area
+    col_left, col_mid, col_right = st.columns([1, 2, 1])
+    with col_mid:
+        st.markdown('<div class="upload-wrapper">', unsafe_allow_html=True)
+        uploaded = st.file_uploader(
+            "Upload a plant photo",
+            type=["jpg", "jpeg", "png", "webp"],
+            label_visibility="collapsed",
+        )
+        st.markdown("</div>", unsafe_allow_html=True)
 
-    if scan_btn:
-        with st.spinner("Identifying plant..."):
-            b64    = image_to_b64(img)
-            result = analyse_plant(client, b64)
-            add_to_history(result.get("plant_name", "Unknown"), result, b64)
+    if uploaded:
+        img = Image.open(uploaded).convert("RGB")
+        c1, c2, c3 = st.columns([1, 1, 1])
+        with c2:
+            st.image(img, use_container_width=True)
+            scan_btn = st.button("🔬 Analyse Plant", use_container_width=True, type="primary")
 
-        # ── Leaf confetti via components.html (reliable JS execution) ──
-        render_leaf_confetti()
+        if scan_btn:
+            with st.spinner("Identifying plant..."):
+                b64    = image_to_b64(img)
+                result = analyse_plant(client, b64)
+                add_to_history(result.get("plant_name", "Unknown"), result, b64)
 
-        st.markdown("---")
-        st.markdown(f'<h2 class="plant-name">🌿 {result.get("plant_name")}</h2>', unsafe_allow_html=True)
-        st.write(result.get("description"))
-
-        res_c1, res_c2, res_c3 = st.columns(3)
-        with res_c1:
-            h = result.get("health_status")
-            st.markdown(
-                f'<div class="section-card">🩺<br><b>Health</b><br>'
-                f'<div class="status-pill" style="background:{STATUS_COLOR.get(h, "#9e9e9e")}">{h}</div></div>',
-                unsafe_allow_html=True,
-            )
-            for tip in result.get("health_tips", []):
-                st.write(f"• {tip}")
-        with res_c2:
-            s = result.get("garden_suitability")
-            st.markdown(
-                f'<div class="section-card">🌻<br><b>Garden</b><br>'
-                f'<div class="status-pill" style="background:{SUIT_COLOR.get(s, "#9e9e9e")}">{s}</div></div>',
-                unsafe_allow_html=True,
-            )
-            st.caption(result.get("garden_notes"))
-        with res_c3:
-            b = result.get("bee_impact")
-            st.markdown(
-                f'<div class="section-card">🐝<br><b>Pollinators</b><br>'
-                f'<div class="status-pill" style="background:{IMPACT_COLOR.get(b, "#9e9e9e")}">{b}</div></div>',
-                unsafe_allow_html=True,
-            )
-            st.caption(result.get("bee_details"))
-
-        if result.get("fun_fact"):
-            st.markdown(
-                f'<div class="fun-fact">💡 <b>Did you know?</b> {result["fun_fact"]}</div>',
-                unsafe_allow_html=True,
-            )
+            render_leaf_confetti()
+            render_result(result)
