@@ -10,6 +10,7 @@ import uuid
 from groq import Groq
 from PIL import Image
 import io
+import streamlit.components.v1 as components
 
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -48,6 +49,75 @@ def render_falling_leaves() -> None:
         """,
         unsafe_allow_html=True,
     )
+
+def render_leaf_confetti() -> None:
+    """
+    Renders a full-screen leaf confetti burst using st.components.v1.html,
+    which reliably executes JavaScript in Streamlit (unlike st.markdown scripts).
+    The iframe is sized to 0px so it takes no visual space.
+    """
+    confetti_html = """
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  * { margin: 0; padding: 0; }
+  body { overflow: hidden; background: transparent; }
+  .leaf {
+    position: fixed;
+    top: -60px;
+    font-size: 1.8rem;
+    pointer-events: none;
+    animation: leafDrop linear forwards;
+    z-index: 99999;
+  }
+  @keyframes leafDrop {
+    0%   { opacity: 1;   transform: translateY(0px)    translateX(0px)   rotate(0deg);   }
+    80%  { opacity: 1; }
+    100% { opacity: 0;   transform: translateY(105vh)  translateX(var(--sway)) rotate(720deg); }
+  }
+</style>
+</head>
+<body>
+<script>
+  (function () {
+    const emojis = ['🍃','🌿','🍂','🌱','🍀'];
+    const count  = 90;
+
+    for (let i = 0; i < count; i++) {
+      const el       = document.createElement('div');
+      el.className   = 'leaf';
+      el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+
+      const left     = Math.random() * 100;
+      const size     = 1.2 + Math.random() * 1.8;
+      const duration = 3.5 + Math.random() * 4;
+      const delay    = Math.random() * 2.5;
+      const sway     = (Math.random() * 180 - 90).toFixed(0) + 'px';
+
+      el.style.cssText = `
+        left: ${left}vw;
+        font-size: ${size}rem;
+        --sway: ${sway};
+        animation-name: leafDrop;
+        animation-duration: ${duration}s;
+        animation-delay: ${delay}s;
+      `;
+      document.body.appendChild(el);
+    }
+
+    // Clean up after all animations finish
+    setTimeout(() => document.body.innerHTML = '', 9000);
+  })();
+</script>
+</body>
+</html>
+"""
+    # height=0 hides the iframe visually; the fixed-position leaves escape the iframe
+    # in most browsers when allow="same-origin" is set via srcdoc rendering.
+    # We use a generous height so the confetti iframe JS actually runs.
+    components.html(confetti_html, height=0, scrolling=False)
+
 
 # ── CSS ───────────────────────────────────────────────────────────────────────
 st.markdown("""
@@ -260,14 +330,53 @@ html, body, [class*="css"] {
   font-size: 0.8rem; margin-bottom: 0.25rem;
 }
 
+/* ── Sidebar: force black text everywhere ── */
 section[data-testid="stSidebar"] {
   background: linear-gradient(180deg, #f0f7ee 0%, #e8f5e9 100%) !important;
   border-right: 2px solid rgba(45,106,79,0.18) !important;
 }
 
+section[data-testid="stSidebar"],
+section[data-testid="stSidebar"] *,
+section[data-testid="stSidebar"] p,
+section[data-testid="stSidebar"] span,
+section[data-testid="stSidebar"] div,
+section[data-testid="stSidebar"] label,
+section[data-testid="stSidebar"] summary,
+section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"],
+section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] * {
+  color: #111111 !important;
+  -webkit-text-fill-color: #111111 !important;
+}
+
+/* Expander header text specifically */
+section[data-testid="stSidebar"] details > summary,
+section[data-testid="stSidebar"] details > summary *,
+section[data-testid="stSidebar"] .streamlit-expanderHeader,
+section[data-testid="stSidebar"] .streamlit-expanderHeader * {
+  color: #111111 !important;
+  -webkit-text-fill-color: #111111 !important;
+}
+
+/* st.caption inside sidebar */
+section[data-testid="stSidebar"] .stCaption,
+section[data-testid="stSidebar"] .stCaption * {
+  color: #444444 !important;
+  -webkit-text-fill-color: #444444 !important;
+}
+
+/* st.info inside sidebar */
+section[data-testid="stSidebar"] .stAlert,
+section[data-testid="stSidebar"] .stAlert * {
+  color: #111111 !important;
+  -webkit-text-fill-color: #111111 !important;
+}
+
 .sidebar-title {
   font-family: 'Playfair Display', serif;
-  font-size: 1.15rem; color: #1b4332;
+  font-size: 1.15rem;
+  color: #1b4332 !important;
+  -webkit-text-fill-color: #1b4332 !important;
   font-weight: 700; margin-bottom: 0.7rem;
   padding-bottom: 0.35rem;
   border-bottom: 2px solid #52b788;
@@ -384,7 +493,7 @@ def analyse_plant(client: Groq, b64: str) -> Dict[str, Any]:
     )
     raw       = (resp.choices[0].message.content or "").strip()
     extracted = extract_json_object(raw)
-    parsed = json.loads(extracted)
+    parsed    = json.loads(extracted)
     return parsed
 
 STATUS_COLOR = {"Healthy": "#4caf50", "Stressed": "#ff9800", "Diseased": "#f44336", "Unknown": "#9e9e9e"}
@@ -410,7 +519,7 @@ with st.sidebar:
             with st.expander(f"🌱 {e['plant_name']}"):
                 if e.get("image"):
                     st.image(base64.b64decode(e["image"]), width=120)
-                st.caption(e['timestamp'])
+                st.caption(e["timestamp"])
 
 # ── Main UI ───────────────────────────────────────────────────────────────────
 render_falling_leaves()
@@ -438,51 +547,12 @@ if uploaded:
 
     if scan_btn:
         with st.spinner("Identifying plant..."):
-            b64 = image_to_b64(img)
+            b64    = image_to_b64(img)
             result = analyse_plant(client, b64)
             add_to_history(result.get("plant_name", "Unknown"), result, b64)
 
-        # Enhanced Leaf Confetti Effect
-        st.markdown("""
-        <script>
-        (function(){
-          const emojis = ['🍃','🌿','🍂','🌱'];
-          const container = document.createElement('div');
-          container.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10000;overflow:hidden;';
-          document.body.appendChild(container);
-          
-          for(let i=0; i<80; i++) {
-            const leaf = document.createElement('div');
-            const left = Math.random() * 100;
-            const size = 1 + Math.random() * 2;
-            const duration = 3 + Math.random() * 4;
-            const delay = Math.random() * 2;
-            
-            leaf.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-            leaf.style.cssText = `
-              position: absolute;
-              top: -50px;
-              left: ${left}%;
-              font-size: ${size}rem;
-              opacity: 0;
-              transform: rotate(${Math.random() * 360}deg);
-              animation: fall ${duration}s linear ${delay}s forwards;
-            `;
-            container.appendChild(leaf);
-          }
-          
-          const style = document.createElement('style');
-          style.textContent = `
-            @keyframes fall {
-              0% { top: -50px; opacity: 1; transform: translateX(0) rotate(0deg); }
-              100% { top: 110vh; opacity: 0; transform: translateX(${Math.random() * 100 - 50}px) rotate(720deg); }
-            }
-          `;
-          document.head.appendChild(style);
-          setTimeout(() => { container.remove(); style.remove(); }, 8000);
-        })();
-        </script>
-        """, unsafe_allow_html=True)
+        # ── Leaf confetti via components.html (reliable JS execution) ──
+        render_leaf_confetti()
 
         st.markdown("---")
         st.markdown(f'<h2 class="plant-name">🌿 {result.get("plant_name")}</h2>', unsafe_allow_html=True)
@@ -491,16 +561,32 @@ if uploaded:
         res_c1, res_c2, res_c3 = st.columns(3)
         with res_c1:
             h = result.get("health_status")
-            st.markdown(f'<div class="section-card">🩺<br><b>Health</b><br><div class="status-pill" style="background:{STATUS_COLOR.get(h, "#9e9e9e")}">{h}</div></div>', unsafe_allow_html=True)
-            for tip in result.get("health_tips", []): st.write(f"• {tip}")
+            st.markdown(
+                f'<div class="section-card">🩺<br><b>Health</b><br>'
+                f'<div class="status-pill" style="background:{STATUS_COLOR.get(h, "#9e9e9e")}">{h}</div></div>',
+                unsafe_allow_html=True,
+            )
+            for tip in result.get("health_tips", []):
+                st.write(f"• {tip}")
         with res_c2:
             s = result.get("garden_suitability")
-            st.markdown(f'<div class="section-card">🌻<br><b>Garden</b><br><div class="status-pill" style="background:{SUIT_COLOR.get(s, "#9e9e9e")}">{s}</div></div>', unsafe_allow_html=True)
+            st.markdown(
+                f'<div class="section-card">🌻<br><b>Garden</b><br>'
+                f'<div class="status-pill" style="background:{SUIT_COLOR.get(s, "#9e9e9e")}">{s}</div></div>',
+                unsafe_allow_html=True,
+            )
             st.caption(result.get("garden_notes"))
         with res_c3:
             b = result.get("bee_impact")
-            st.markdown(f'<div class="section-card">🐝<br><b>Pollinators</b><br><div class="status-pill" style="background:{IMPACT_COLOR.get(b, "#9e9e9e")}">{b}</div></div>', unsafe_allow_html=True)
+            st.markdown(
+                f'<div class="section-card">🐝<br><b>Pollinators</b><br>'
+                f'<div class="status-pill" style="background:{IMPACT_COLOR.get(b, "#9e9e9e")}">{b}</div></div>',
+                unsafe_allow_html=True,
+            )
             st.caption(result.get("bee_details"))
 
         if result.get("fun_fact"):
-            st.markdown(f'<div class="fun-fact">💡 <b>Did you know?</b> {result["fun_fact"]}</div>', unsafe_allow_html=True)
+            st.markdown(
+                f'<div class="fun-fact">💡 <b>Did you know?</b> {result["fun_fact"]}</div>',
+                unsafe_allow_html=True,
+            )
