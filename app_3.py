@@ -38,20 +38,78 @@ def render_site_logo() -> None:
             return
 
 def render_falling_leaves() -> None:
+    """Inject a JS-driven leaf burst: 40 leaves rain down for ~4 s then vanish."""
     st.markdown(
         """
-        <div class="leaf-layer" aria-hidden="true">
-          <span class="leaf-item l1">🍃</span>
-          <span class="leaf-item l2">🌿</span>
-          <span class="leaf-item l3">🍂</span>
-          <span class="leaf-item l4">🍃</span>
-          <span class="leaf-item l5">🍂</span>
-          <span class="leaf-item l6">🌱</span>
-          <span class="leaf-item l7">🍂</span>
-          <span class="leaf-item l8">🍃</span>
-          <span class="leaf-item l9">🌿</span>
-          <span class="leaf-item l10">🍃</span>
-        </div>
+        <script>
+        (function() {
+          const EMOJIS = ['🍃','🌿','🍂','🍃','🍂','🌱','🍂','🍃','🌿','🍃'];
+          const COUNT  = 40;
+          const host   = document.createElement('div');
+          host.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:99999;overflow:hidden;';
+          document.body.appendChild(host);
+          for (let i = 0; i < COUNT; i++) {
+            const leaf  = document.createElement('span');
+            const dur   = (8 + Math.random() * 6).toFixed(2);
+            const delay = (Math.random() * 2).toFixed(2);
+            const left  = (Math.random() * 100).toFixed(1);
+            const size  = (1.2 + Math.random() * 1.4).toFixed(2);
+            const sway  = (-20 + Math.random() * 40).toFixed(1);
+            leaf.textContent = EMOJIS[i % EMOJIS.length];
+            leaf.style.cssText =
+              'position:absolute;top:-10vh;left:' + left + '%;font-size:' + size + 'rem;' +
+              'opacity:0.92;animation:leafBurst ' + dur + 's ' + delay + 's linear 1 forwards;' +
+              '--sway:' + sway + 'px;filter:drop-shadow(0 2px 6px rgba(27,67,50,0.25));';
+            host.appendChild(leaf);
+          }
+          const style = document.createElement('style');
+          style.textContent =
+            '@keyframes leafBurst{' +
+            '0%{transform:translateY(0) translateX(0px) rotate(0deg);opacity:0.92}' +
+            '50%{transform:translateY(55vh) translateX(var(--sway)) rotate(180deg);opacity:0.88}' +
+            '100%{transform:translateY(115vh) translateX(0px) rotate(360deg);opacity:0}}';
+          document.head.appendChild(style);
+          setTimeout(function(){ host.remove(); style.remove(); }, 14000);
+        })();
+        </script>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def fix_upload_label_color() -> None:
+    """Force the Streamlit file-uploader label to white via JS."""
+    st.markdown(
+        """
+        <script>
+        (function applyWhiteLabel() {
+          function doFix() {
+            document.querySelectorAll('[data-testid="stFileUploader"]').forEach(function(uploader) {
+              var block = uploader.closest('[data-testid="element-container"]') || uploader.parentElement;
+              if (block) {
+                var prev = block.previousElementSibling;
+                if (prev) {
+                  prev.querySelectorAll('label,p,span,div,small').forEach(function(el) {
+                    el.style.setProperty('color','#ffffff','important');
+                    el.style.setProperty('-webkit-text-fill-color','#ffffff','important');
+                  });
+                }
+              }
+              uploader.querySelectorAll('label,p,span,small,div').forEach(function(el) {
+                el.style.setProperty('color','#ffffff','important');
+                el.style.setProperty('-webkit-text-fill-color','#ffffff','important');
+              });
+            });
+          }
+          doFix();
+          setTimeout(doFix, 300);
+          setTimeout(doFix, 900);
+          setTimeout(doFix, 2000);
+          var obs = new MutationObserver(doFix);
+          obs.observe(document.body, {childList:true, subtree:true});
+          setTimeout(function(){ obs.disconnect(); }, 10000);
+        })();
+        </script>
         """,
         unsafe_allow_html=True,
     )
@@ -102,38 +160,7 @@ html, body, [class*="css"] {
   z-index: 9999;
 }
 
-/* ── Falling leaves ── */
-.leaf-layer {
-  position: fixed; inset: 0;
-  pointer-events: none; z-index: 2; overflow: hidden;
-}
-.leaf-item {
-  position: fixed; top: -12vh; z-index: 2;
-  pointer-events: none; font-size: 1.5rem; opacity: 0.80;
-  animation-name: leafFall, leafSway;
-  animation-timing-function: linear, ease-in-out;
-  animation-iteration-count: infinite, infinite;
-  animation-direction: normal, alternate;
-  filter: drop-shadow(0 2px 4px rgba(27,67,50,0.2));
-}
-@keyframes leafFall {
-  0%   { transform: translateY(0)     rotate(0deg);   opacity: 0.80; }
-  100% { transform: translateY(120vh) rotate(360deg); opacity: 0.90; }
-}
-@keyframes leafSway {
-  0%   { margin-left: -12px; }
-  100% { margin-left:  28px; }
-}
-.l1  { left:  5%; animation-duration: 11s,  3.1s; animation-delay: 0s,    0s;    }
-.l2  { left: 13%; animation-duration: 14s,  2.8s; animation-delay: 1.0s,  0.3s;  }
-.l3  { left: 22%; animation-duration: 12s,  3.2s; animation-delay: 2.1s,  0.8s;  }
-.l4  { left: 33%; animation-duration: 15s,  2.9s; animation-delay: 0.7s,  0.2s;  }
-.l5  { left: 45%; animation-duration: 13s,  3.0s; animation-delay: 1.8s,  0.5s;  }
-.l6  { left: 57%; animation-duration: 16s,  3.3s; animation-delay: 2.8s,  0.7s;  }
-.l7  { left: 68%; animation-duration: 12.5s,2.7s; animation-delay: 0.4s,  0.4s;  }
-.l8  { left: 78%; animation-duration: 14.5s,3.1s; animation-delay: 1.5s,  0.6s;  }
-.l9  { left: 87%; animation-duration: 11.5s,2.9s; animation-delay: 3.2s,  0.9s;  }
-.l10 { left: 95%; animation-duration: 13.5s,3.4s; animation-delay: 0.9s,  0.1s;  }
+/* ── Falling leaves handled by JS burst (render_falling_leaves) ── */
 
 /* ── Typography ── */
 .stApp p, .stApp li, .stApp span,
@@ -543,7 +570,6 @@ with st.sidebar:
         )
 
 # ── Main ──────────────────────────────────────────────────────────────────────
-render_falling_leaves()
 
 st.markdown('<h1 class="main-title">🌿 PlantScan AI</h1>', unsafe_allow_html=True)
 st.markdown('<div class="vine-divider">🌿 ❧ 🌿</div>', unsafe_allow_html=True)
@@ -559,6 +585,7 @@ uploaded = st.file_uploader(
     label_visibility="visible",
 )
 st.markdown("</div>", unsafe_allow_html=True)
+fix_upload_label_color()
 
 if uploaded:
     img = Image.open(uploaded).convert("RGB")
