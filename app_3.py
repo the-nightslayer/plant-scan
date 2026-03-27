@@ -76,13 +76,14 @@ def render_leaf_confetti() -> None:
 * {{ margin:0; padding:0; }}
 html, body {{ width:100%; height:100%; overflow:hidden; background:transparent; }}
 @keyframes drop {{
-  0%   {{ opacity:1; transform:translateY(-80px) translateX(0) rotate(0deg); }}
-  80%  {{ opacity:1; }}
-  100% {{ opacity:0; transform:translateY(105vh) translateX(var(--sway,0px)) rotate(800deg); }}
+  0%   {{ opacity:1; transform:translateY(-80px) translateX(0px) rotate(0deg); }}
+  85%  {{ opacity:1; }}
+  100% {{ opacity:0; transform:translateY(102vh) translateX(var(--sway,0px)) rotate(540deg); }}
 }}
 .lf {{
   position:fixed; top:0; pointer-events:none;
-  animation:drop linear forwards;
+  opacity:0;
+  animation:drop linear both;
   font-family:"Segoe UI Emoji","Apple Color Emoji",serif;
 }}
 </style>
@@ -114,40 +115,44 @@ html, body {{ width:100%; height:100%; overflow:hidden; background:transparent; 
     // cross-origin guard — fall back to tall inline iframe
   }}
 
-  // ── Step 2: spawn leaves inside this (now fullscreen) iframe ──
-  var EMOJIS = ['🍃','🌿','🍂','🌱','🍀','🌾'];
-  var COUNT  = 120;
-  var maxEnd = 0;
-  var frag   = document.createDocumentFragment();
+  // ── Step 2: trickle leaves one-by-one from the top ──
+  // Each leaf is spawned via its own setTimeout so it appears at y=0
+  // and falls cleanly — no piling, no pre-spawned invisible queue.
+  var EMOJIS  = ['🍃','🌿','🍂','🌱','🍀','🌾'];
+  var COUNT   = 40;          // 40 leaves total
+  var WINDOW  = 5000;        // spread spawns over 5 seconds
+  var FALL    = 5500;        // each leaf takes ~5.5 s to fall off screen
 
   for (var i = 0; i < COUNT; i++) {{
-    var el    = document.createElement('span');
-    el.className = 'lf';
-    el.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
-    var left  = (Math.random() * 100).toFixed(2);
-    var size  = (1.2 + Math.random() * 2.0).toFixed(2);
-    var dur   = (3.5 + Math.random() * 5.0).toFixed(2);
-    // Stagger start by spreading leaves across Y so they appear already mid-fall
-    // instead of all queuing at the top. We use a negative delay equivalent:
-    // start the animation partway through by setting a negative delay.
-    var negDelay = (-(Math.random() * parseFloat(dur) * 0.85)).toFixed(2);
-    var sway  = ((Math.random() * 260) - 130).toFixed(0) + 'px';
-    var end   = parseFloat(dur);  // negative delay means it's already running
-    if (end > maxEnd) maxEnd = end;
-    el.style.cssText = 'left:'+left+'vw;font-size:'+size+'rem;--sway:'+sway
-      +';animation-duration:'+dur+'s;animation-delay:'+negDelay+'s';
-    frag.appendChild(el);
+    (function(idx) {{
+      var spawnAt = Math.floor((idx / COUNT) * WINDOW);
+      setTimeout(function() {{
+        var el = document.createElement('span');
+        el.className = 'lf';
+        el.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+        var left = (Math.random() * 96).toFixed(1);
+        var size = (1.4 + Math.random() * 1.6).toFixed(2);
+        var dur  = (4.5 + Math.random() * 2.0).toFixed(2);
+        var sway = ((Math.random() * 180) - 90).toFixed(0) + 'px';
+        // animation-delay:0s — starts falling the moment it is added to DOM
+        el.style.cssText = 'left:'+left+'vw;font-size:'+size
+          +'rem;--sway:'+sway+';animation-duration:'+dur+'s;animation-delay:0s';
+        document.body.appendChild(el);
+        // Remove this leaf once its own animation is done
+        setTimeout(function() {{ el.remove(); }}, parseFloat(dur) * 1000 + 200);
+      }}, spawnAt);
+    }})(i);
   }}
-  document.body.appendChild(frag);
 
-  // ── Step 3: clean up — restore iframe to 0px after animation ──
+  // ── Step 3: clean up iframe after last leaf has fallen ──
+  var totalLife = WINDOW + FALL + 500;
   setTimeout(function() {{
     try {{
       var f = window.parent.document.querySelector('iframe[data-lc="'+FRAME_ID+'"]');
       if (f) {{ f.style.cssText = 'height:0px!important;width:0px!important;border:none'; }}
     }} catch(e) {{}}
     document.body.innerHTML = '';
-  }}, (maxEnd + 2.0) * 1000);
+  }}, totalLife);
 }})();
 </script>
 </body>
